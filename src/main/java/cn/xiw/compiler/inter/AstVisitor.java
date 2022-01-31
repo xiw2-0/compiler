@@ -4,9 +4,10 @@ package cn.xiw.compiler.inter;
  * AstNode visitor using visitor pattern.
  */
 public interface AstVisitor {
-    void visit(IdExpr idExpr);
 
-    void visit(ArithOp arithOp);
+    void visit(DeclRefExpr declRefExpr);
+
+    void visit(BinaryOp binaryOp);
 
     void visit(UnaryOp unaryOp);
 
@@ -14,17 +15,7 @@ public interface AstVisitor {
 
     void visit(ConstantExpr constantExpr);
 
-    void visit(OrLogical orLogical);
-
-    void visit(AndLogical andLogical);
-
-    void visit(NotLogical notLogical);
-
-    void visit(RelLogical relLogical);
-
     void visit(IfStmt ifStmt);
-
-    void visit(IfElseStmt ifElseStmt);
 
     void visit(WhileStmt whileStmt);
 
@@ -34,7 +25,15 @@ public interface AstVisitor {
 
     void visit(BreakStmt breakStmt);
 
-    void visit(SeqStmt seqStmt);
-
     void visit(NullStmt nullStmt);
+
+    void visit(BlockStmt blockStmt);
+
+    void visit(DeclStmt declStmt);
+
+    void visit(FuncDecl funcDecl);
+
+    void visit(VarDecl varDecl);
+
+    void visit(ParamDecl paramDecl);
 }

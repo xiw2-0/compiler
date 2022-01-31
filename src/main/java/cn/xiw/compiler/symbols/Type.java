@@ -15,8 +15,8 @@ public class Type {
         this.width = width;
     }
 
-    public static final Type CHAR_TYPE = new Type(1), INT_TYPE = new Type(4),
-            FLOAT_TYPE = new Type(8);
+    public static final Type VOID_TYPE = new Type(0), CHAR_TYPE = new Type(1),
+            INT_TYPE = new Type(4), FLOAT_TYPE = new Type(8);
 
     public static Type max(Type t1, Type t2) {
         if (t1 == FLOAT_TYPE || t2 == FLOAT_TYPE) {

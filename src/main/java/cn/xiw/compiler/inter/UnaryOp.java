@@ -1,15 +1,16 @@
 package cn.xiw.compiler.inter;
 
-import cn.xiw.compiler.lexer.Token;
 import cn.xiw.compiler.symbols.Type;
 import lombok.Getter;
 
-public class UnaryOp extends OpExpr {
-    @Getter
+@Getter
+public class UnaryOp extends ExprAst {
+    private final OpType op;
     private final ExprAst expr;
 
-    UnaryOp(Type type, Token operator, ExprAst expr) {
-        super(type, operator);
+    UnaryOp(Type type, OpType operator, ExprAst expr) {
+        super(expr.type);
+        op = operator;
         this.expr = expr;
     }
 

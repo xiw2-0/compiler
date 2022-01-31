@@ -9,9 +9,8 @@ import lombok.Getter;
 public class BreakStmt extends StmtAst {
     private final StmtAst enclosingStmt;
 
-    BreakStmt(ExprAst expr, StmtAst stmt) {
-        this.expr = expr;
-        this.stmt = stmt;
+    BreakStmt(StmtAst enclosing) {
+        this.enclosingStmt = enclosing;
     }
 
     @Override

@@ -1,16 +1,15 @@
 package cn.xiw.compiler.inter;
 
-import cn.xiw.compiler.lexer.Token;
 import cn.xiw.compiler.symbols.Type;
 import lombok.Getter;
 
-public class IdExpr extends ExprAst {
+public class DeclRefExpr extends ExprAst {
     @Getter
-    private final Token identifierToken;
+    private final String identifier;
 
-    IdExpr(Type type, Token identifierToken) {
+    DeclRefExpr(Type type, String id) {
         super(type);
-        this.identifierToken = identifierToken;
+        identifier = id;
     }
 
     @Override

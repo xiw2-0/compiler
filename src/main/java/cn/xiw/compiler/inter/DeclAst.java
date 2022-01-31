@@ -1,6 +1,10 @@
 package cn.xiw.compiler.inter;
 
-public class DeclAst extends AstNode {
-    private final Type type;
-    private final Token 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@Getter
+@AllArgsConstructor
+public abstract class DeclAst extends AstNode {
+    private final String identifier;
 }

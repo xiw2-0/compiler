@@ -7,10 +7,10 @@ import lombok.Getter;
  */
 @Getter
 public class AssignElemStmt extends StmtAst {
-    private final IdExpr id;
+    private final DeclRefExpr id;
     private final ExprAst index, expr;
 
-    AssignElemStmt(IdExpr id, ExprAst index, ExprAst expr) {
+    AssignElemStmt(DeclRefExpr id, ExprAst index, ExprAst expr) {
         this.id = id;
         this.index = index;
         this.expr = expr;
