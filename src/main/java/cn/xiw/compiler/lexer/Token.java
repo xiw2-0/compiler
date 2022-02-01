@@ -1,28 +1,82 @@
 package cn.xiw.compiler.lexer;
 
-import lombok.Builder;
+import java.util.ArrayList;
+
 import lombok.Getter;
 
-@Getter
-@Builder
 public class Token {
+    @Getter
     private final TokenType type;
 
-    // for keyword. Tag id
-    private int keywordId;
+    private final int index;
+
+    private static ArrayList<String> stringTable = new ArrayList<>();
+
+    private static TokenTypeUtil tokenTypeUtil = TokenTypeUtil.instance();
+
+    private Token(TokenType type, int index) {
+        this.type = type;
+        this.index = index;
+    }
+
+    public static Token eofTok() {
+        return new Token(TokenType.EOF, -1);
+    }
+
+    public static Token identifierTok(String id) {
+        stringTable.add(id);
+        return new Token(TokenType.IDENTIFIER, stringTable.size() - 1);
+    }
+
+    public static Token constIntTok(int value) {
+        stringTable.add(Integer.toString(value));
+        return new Token(TokenType.CONST_INT, stringTable.size() - 1);
+    }
+
+    public static Token constCharTok(char ch) {
+        stringTable.add("" + ch);
+        return new Token(TokenType.CONST_CHAR, stringTable.size() - 1);
+    }
+
+    public static Token constFloatTok(double value) {
+        stringTable.add(Double.toString(value));
+        return new Token(TokenType.CONST_CHAR, stringTable.size() - 1);
+    }
+
+    public static Token stringLiteralTok(String str) {
+        stringTable.add(str);
+        return new Token(TokenType.CONST_CHAR, stringTable.size() - 1);
+    }
+
+    public static Token punctTok(String punctuator) {
+        return new Token(tokenTypeUtil.getTokenType(punctuator), -1);
+    }
+
+    public static Token keywordTok(String keyword) {
+        return new Token(tokenTypeUtil.getTokenType(keyword), -1);
+    }
 
     // for identifier
-    private String identifierString;
+    public String identifier() {
+        return stringTable.get(index);
+    }
 
-    // for constants. Tag id
-    private int constantId;
-    private int valueInt;
-    private double valueFloat;
-    private char valueChar;
+    // for constants.
+    public int valueInt() {
+        return Integer.parseInt(stringTable.get(index));
+    }
+
+    public double valueFloat() {
+        return Double.parseDouble(stringTable.get(index));
+    }
+
+    public char valueChar() {
+        return stringTable.get(index).charAt(0);
+    }
 
     // for string literals
-    private String valueString;
+    public String valueString() {
+        return stringTable.get(index);
+    }
 
-    // for punctuators
-    private int punctuatorId;
 }

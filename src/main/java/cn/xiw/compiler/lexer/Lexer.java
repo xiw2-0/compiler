@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.Map;
 
 public class Lexer {
     public static int line = 1;
@@ -12,9 +11,7 @@ public class Lexer {
     private final BufferedReader reader;
     private char peek = ' ';
 
-    private final Map<String, Integer> keywords = Map.of("break", Tag.BREAK,
-            "char", Tag.CHAR, "else", Tag.ELSE, "if", Tag.IF, "int", Tag.INT,
-            "while", Tag.WHILE, "float", Tag.FLOAT);
+    private TokenTypeUtil tokenTypeUtil = TokenTypeUtil.instance();
 
     public Lexer(InputStream in) {
         this.reader = new BufferedReader(new InputStreamReader(in));
@@ -30,7 +27,7 @@ public class Lexer {
         }
         // 1. check eof
         if (peek == 0xffff) {
-            return Token.builder().type(TokenType.EOF).build();
+            return Token.eofTok();
         }
         // 2. check keywords and identifiers
         // id: letter(letterordigit)+
@@ -78,13 +75,11 @@ public class Lexer {
         }
         var id = strBuilder.toString();
         // 1. keywords
-        if (keywords.containsKey(id)) {
-            return new Token.TokenBuilder().type(TokenType.KEYWORD)
-                    .keywordId(keywords.get(id)).build();
+        if (tokenTypeUtil.isKeyword(id)) {
+            return Token.keywordTok(id);
         }
         // 2. id
-        return new Token.TokenBuilder().type(TokenType.IDENTIFIER)
-                .identifierString(id).build();
+        return Token.identifierTok(id);
     }
 
     /**
@@ -94,8 +89,7 @@ public class Lexer {
         // char: 'letter', escaped char is not supported yet
         if (peek == '\'') {
             readch();
-            var normalChar = new Token.TokenBuilder().type(TokenType.CONSTANT)
-                    .constantId(Tag.CHAR).valueChar(peek).build();
+            var normalChar = Token.constCharTok(peek);
             if (!readch('\'')) {
                 error("Expect a \'");
             }
@@ -118,11 +112,9 @@ public class Lexer {
                     decimal /= 10;
                     readch();
                 }
-                return new Token.TokenBuilder().type(TokenType.CONSTANT)
-                        .constantId(Tag.FLOAT).valueFloat(floatValue).build();
+                return Token.constFloatTok(floatValue);
             }
-            return new Token.TokenBuilder().type(TokenType.CONSTANT)
-                    .constantId(Tag.INT).valueInt(value).build();
+            return Token.constIntTok(value);
         }
         error("Invalid number");
         return null;
@@ -138,16 +130,14 @@ public class Lexer {
             readch();
         }
 
-        return new Token.TokenBuilder().type(TokenType.STRING)
-                .valueString(strBuilder.toString()).build();
+        return Token.stringLiteralTok(strBuilder.toString());
     }
 
     /**
      * Returns punctuators.
      */
     private Token punctuator() throws IOException {
-        var tokenBuilder = new Token.TokenBuilder().type(TokenType.PUNCTUATOR);
-        int punctuatorId = -1;
+        String punctuator = "" + peek;
         switch (peek) {
         case '[':
         case ']':
@@ -160,31 +150,27 @@ public class Lexer {
         case '%':
         case '+':
         case '-':
-            punctuatorId = peek;
             break;
         case '<':
-            punctuatorId = readch('=') ? Tag.LE : '<';
-            break;
         case '>':
-            punctuatorId = readch('=') ? Tag.GE : '>';
-            break;
         case '=':
-            punctuatorId = readch('=') ? Tag.EQ : '=';
+        case '!':
+            if (readch('='))
+                punctuator += '=';
             break;
         case '&':
-            punctuatorId = readch('&') ? Tag.AND : '&';
-            break;
-        case '!':
-            punctuatorId = readch('=') ? Tag.NE : '!';
+            if (readch('&'))
+                punctuator += '&';
             break;
         case '|':
-            punctuatorId = readch('|') ? Tag.OR : '|';
+            if (readch('|'))
+                punctuator += '|';
             break;
         default:
             error("Invalid punctuator");
             break;
         }
-        return tokenBuilder.punctuatorId(punctuatorId).build();
+        return Token.punctTok(punctuator);
     }
 
     private void error(String message) {
