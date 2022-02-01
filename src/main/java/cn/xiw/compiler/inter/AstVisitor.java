@@ -13,7 +13,13 @@ public interface AstVisitor {
 
     void visit(AccessOp accessOp);
 
-    void visit(ConstantExpr constantExpr);
+    void visit(IntLiteral intLiteral);
+
+    void visit(CharLiteral charLiteral);
+
+    void visit(FloatLiteral floatLiteral);
+
+    void visit(StringLiteral stringLiteral);
 
     void visit(IfStmt ifStmt);
 
