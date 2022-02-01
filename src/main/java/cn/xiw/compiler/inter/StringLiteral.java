@@ -1,7 +1,7 @@
 package cn.xiw.compiler.inter;
 
-import cn.xiw.compiler.symbols.Array;
-import cn.xiw.compiler.symbols.Type;
+import cn.xiw.compiler.symbols.ArrayType;
+import cn.xiw.compiler.symbols.ScalarType;
 import lombok.Getter;
 
 public class StringLiteral extends ExprAst {
@@ -9,7 +9,7 @@ public class StringLiteral extends ExprAst {
     private final String value;
 
     StringLiteral(String value) {
-        super(new Array(Type.CHAR_TYPE, value.length()));
+        super(new ArrayType(ScalarType.CHAR_TYPE, value.length()));
         this.value = value;
     }
 

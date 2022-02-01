@@ -1,6 +1,6 @@
 package cn.xiw.compiler.inter;
 
-import cn.xiw.compiler.symbols.Type;
+import cn.xiw.compiler.symbols.ScalarType;
 import lombok.Getter;
 
 public class FloatLiteral extends ExprAst {
@@ -8,7 +8,7 @@ public class FloatLiteral extends ExprAst {
     private final double value;
 
     FloatLiteral(double value) {
-        super(Type.FLOAT_TYPE);
+        super(ScalarType.FLOAT_TYPE);
         this.value = value;
     }
 

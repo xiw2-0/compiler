@@ -3,7 +3,7 @@ package cn.xiw.compiler.symbols;
 import java.util.HashMap;
 import java.util.Map;
 
-import cn.xiw.compiler.lexer.Token;
+import cn.xiw.compiler.inter.DeclAst;
 
 /**
  * Stores environment, mainly symbol tables for different scopes. Build symbol
@@ -11,8 +11,8 @@ import cn.xiw.compiler.lexer.Token;
  */
 public class Env {
     // Store symbol table for current environment.
-    // Mapping from tokens to symbols (ids)
-    private final Map<Token, Object> symbolTable = new HashMap<>();
+    // Mapping from identifier string to decl ast node (ids)
+    private final Map<String, DeclAst> symbolTable = new HashMap<>();
 
     // Points to previous environment.
     private final Env prev;
@@ -21,14 +21,14 @@ public class Env {
         this.prev = prev;
     }
 
-    public void addSymbol(Token token, Object id) {
-        symbolTable.put(token, id);
+    public void addSymbol(String id, DeclAst decl) {
+        symbolTable.put(id, decl);
     }
 
-    public Object getSymbol(Token token) {
+    public DeclAst getSymbol(String id) {
         for (var env = this; env != null; env = env.prev) {
-            if (env.symbolTable.containsKey(token)) {
-                return env.symbolTable.get(token);
+            if (env.symbolTable.containsKey(id)) {
+                return env.symbolTable.get(id);
             }
         }
         return null;
