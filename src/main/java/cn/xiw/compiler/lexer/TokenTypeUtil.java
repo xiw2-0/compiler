@@ -29,6 +29,8 @@ public class TokenTypeUtil {
         punctMapping.put(">=", TokenType.PUNCT_GE);
         punctMapping.put("|", TokenType.PUNCT_BIT_OR);
         punctMapping.put("||", TokenType.PUNCT_OR);
+        punctMapping.put("&", TokenType.PUNCT_BIT_AND);
+        punctMapping.put("&&", TokenType.PUNCT_AND);
         punctMapping.put(";", TokenType.PUNCT_SEMI);
         punctMapping.put("=", TokenType.PUNCT_EQ);
         punctMapping.put("==", TokenType.PUNCT_EQ);

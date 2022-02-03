@@ -11,7 +11,7 @@ public class IfStmt extends StmtAst {
     private final ExprAst expr;
     private StmtAst ifStmt, elseStmt;
 
-    IfStmt(ExprAst expr, StmtAst ifStmt, StmtAst elseStmt) {
+    public IfStmt(ExprAst expr, StmtAst ifStmt, StmtAst elseStmt) {
         this.expr = expr;
         this.ifStmt = ifStmt;
         this.elseStmt = elseStmt;

@@ -7,7 +7,7 @@ public class CharLiteral extends ExprAst {
     @Getter
     private final char value;
 
-    CharLiteral(char value) {
+    public CharLiteral(char value) {
         super(ScalarType.CHAR_TYPE);
         this.value = value;
     }

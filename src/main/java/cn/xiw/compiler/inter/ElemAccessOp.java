@@ -1,18 +1,18 @@
 package cn.xiw.compiler.inter;
 
-import cn.xiw.compiler.symbols.Type;
+import cn.xiw.compiler.symbols.ArrayType;
 import lombok.Getter;
 
 /**
  * Array accessor.
  */
 @Getter
-public class AccessOp extends ExprAst {
+public class ElemAccessOp extends ExprAst {
     private final DeclRefExpr arrayId;
     private final ExprAst index;
 
-    AccessOp(Type type, DeclRefExpr id, ExprAst index) {
-        super(type);
+    public ElemAccessOp(DeclRefExpr id, ExprAst index) {
+        super(((ArrayType) id.getVarDecl().getType()).getOf());
         arrayId = id;
         this.index = index;
     }

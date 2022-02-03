@@ -7,7 +7,7 @@ import lombok.Getter;
 public class VarDecl extends DeclAst {
     private final Type type;
 
-    VarDecl(String id, Type type) {
+    public VarDecl(String id, Type type) {
         super(id);
         this.type = type;
     }

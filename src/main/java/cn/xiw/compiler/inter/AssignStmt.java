@@ -10,7 +10,7 @@ public class AssignStmt extends StmtAst {
     private final DeclRefExpr id;
     private final ExprAst expr;
 
-    AssignStmt(DeclRefExpr id, ExprAst expr) {
+    public AssignStmt(DeclRefExpr id, ExprAst expr) {
         this.id = id;
         this.expr = expr;
     }

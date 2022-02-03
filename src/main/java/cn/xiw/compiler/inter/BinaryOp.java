@@ -8,7 +8,7 @@ public class BinaryOp extends ExprAst {
     private final TokenType op;
     private final ExprAst expr1, expr2;
 
-    BinaryOp(TokenType op, ExprAst expr1, ExprAst expr2) {
+    public BinaryOp(TokenType op, ExprAst expr1, ExprAst expr2) {
         super(expr1.type);
         this.op = op;
         this.expr1 = expr1;

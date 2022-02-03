@@ -1,6 +1,7 @@
 package cn.xiw.compiler.inter;
 
 import lombok.Getter;
+import lombok.Setter;
 
 /**
  * WhileStmt: while (expr) {stmt}
@@ -8,11 +9,13 @@ import lombok.Getter;
 @Getter
 public class WhileStmt extends StmtAst {
     private final ExprAst expr;
-    private final StmtAst stmt;
 
-    WhileStmt(ExprAst expr, StmtAst stmt) {
+    @Setter
+    private StmtAst stmt;
+
+    public WhileStmt(ExprAst expr) {
         this.expr = expr;
-        this.stmt = stmt;
+        stmt = NullStmt.instance();
     }
 
     @Override

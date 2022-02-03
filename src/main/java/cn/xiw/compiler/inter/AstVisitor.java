@@ -11,7 +11,7 @@ public interface AstVisitor {
 
     void visit(UnaryOp unaryOp);
 
-    void visit(AccessOp accessOp);
+    void visit(ElemAccessOp accessOp);
 
     void visit(IntLiteral intLiteral);
 

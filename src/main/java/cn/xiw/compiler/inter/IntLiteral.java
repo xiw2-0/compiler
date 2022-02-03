@@ -7,7 +7,7 @@ public class IntLiteral extends ExprAst {
     @Getter
     private final int value;
 
-    IntLiteral(int value) {
+    public IntLiteral(int value) {
         super(ScalarType.INT_TYPE);
         this.value = value;
     }

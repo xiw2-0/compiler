@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 public class BlockStmt extends StmtAst {
     private final ArrayList<StmtAst> stmts = new ArrayList<>();
 
-    void addStmt(StmtAst stmt) {
+    public void addStmt(StmtAst stmt) {
         stmts.add(stmt);
     }
 

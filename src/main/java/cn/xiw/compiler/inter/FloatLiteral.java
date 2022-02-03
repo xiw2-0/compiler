@@ -7,7 +7,7 @@ public class FloatLiteral extends ExprAst {
     @Getter
     private final double value;
 
-    FloatLiteral(double value) {
+    public FloatLiteral(double value) {
         super(ScalarType.FLOAT_TYPE);
         this.value = value;
     }

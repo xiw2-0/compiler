@@ -27,6 +27,8 @@ public enum TokenType {
     PUNCT_GE, // >=
     PUNCT_BIT_OR, // |
     PUNCT_OR, // ||
+    PUNCT_BIT_AND, // &
+    PUNCT_AND, // &&
     PUNCT_SEMI, // ;
     PUNCT_EQ, // =
     PUNCT_EQEQ, // ==
