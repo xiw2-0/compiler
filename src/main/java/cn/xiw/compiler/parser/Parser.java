@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
+import cn.xiw.compiler.inter.ArrayType;
 import cn.xiw.compiler.inter.AssignElemStmt;
 import cn.xiw.compiler.inter.AssignStmt;
 import cn.xiw.compiler.inter.AstNode;
@@ -19,17 +20,16 @@ import cn.xiw.compiler.inter.FloatLiteral;
 import cn.xiw.compiler.inter.IfStmt;
 import cn.xiw.compiler.inter.IntLiteral;
 import cn.xiw.compiler.inter.NullStmt;
+import cn.xiw.compiler.inter.BuiltinType;
 import cn.xiw.compiler.inter.StmtAst;
+import cn.xiw.compiler.inter.Type;
 import cn.xiw.compiler.inter.UnaryOp;
 import cn.xiw.compiler.inter.VarDecl;
 import cn.xiw.compiler.inter.WhileStmt;
 import cn.xiw.compiler.lexer.Lexer;
 import cn.xiw.compiler.lexer.Token;
 import cn.xiw.compiler.lexer.TokenType;
-import cn.xiw.compiler.symbols.ArrayType;
 import cn.xiw.compiler.symbols.Env;
-import cn.xiw.compiler.symbols.ScalarType;
-import cn.xiw.compiler.symbols.Type;
 
 public class Parser {
     private final Lexer lexer;
@@ -91,18 +91,17 @@ public class Parser {
     }
 
     /**
-     * stmt -> loc = bool; %assign stmt | if (expr) stmt else stmt | while
-     * (expr) stmt | break; | type id; %decl stmt | block loc -> loc [bool] | id
+     * stmt
      * 
      * @return
      * @throws IOException
      */
     private StmtAst stmt() throws IOException {
         switch (look.getType()) {
-        case PUNCT_SEMI:
+        case PUNCT_SEMI: // stmt -> ;
             move();
             return NullStmt.instance();
-        case KW_IF:
+        case KW_IF: // stmt -> if (expr) stmt else stmt
             match(TokenType.KW_IF);
             match(TokenType.PUNCT_L_PAR);
             var boolExpr = bool();
@@ -114,7 +113,7 @@ public class Parser {
                 elseStmt = stmt();
             }
             return new IfStmt(boolExpr, ifStmt, elseStmt);
-        case KW_WHILE:
+        case KW_WHILE: // stmt -> while (expr) stmt
             match(TokenType.KW_WHILE);
             match(TokenType.PUNCT_R_PAR);
             boolExpr = bool();
@@ -124,15 +123,15 @@ public class Parser {
             whileStmt.setStmt(stmt());
             currentEnclosingStmt = oldEnclosing;
             return whileStmt;
-        case KW_BREAK:
+        case KW_BREAK: // stmt -> break;
             match(TokenType.KW_BREAK);
             match(TokenType.PUNCT_SEMI);
             return new BreakStmt(currentEnclosingStmt);
-        case PUNCT_L_BAR:
+        case PUNCT_L_BAR: // stmt -> block
             return block();
-        case IDENTIFIER:
+        case IDENTIFIER: // stmt -> loc = bool;
             return assignment();
-        default:
+        default: // stmt -> type id;
             return declStmt();
         }
     }
@@ -166,13 +165,13 @@ public class Parser {
         Type baseType = null;
         switch (look.getType()) {
         case KW_INT:
-            baseType = ScalarType.INT_TYPE;
+            baseType = BuiltinType.INT_TYPE;
             break;
         case KW_CHAR:
-            baseType = ScalarType.CHAR_TYPE;
+            baseType = BuiltinType.CHAR_TYPE;
             break;
         case KW_FLOAT:
-            baseType = ScalarType.FLOAT_TYPE;
+            baseType = BuiltinType.FLOAT_TYPE;
             break;
         default:
             error("Invalid decl type");

@@ -1,6 +1,5 @@
 package cn.xiw.compiler.inter;
 
-import cn.xiw.compiler.symbols.Type;
 import lombok.Getter;
 
 @Getter

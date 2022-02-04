@@ -1,6 +1,5 @@
 package cn.xiw.compiler.inter;
 
-import cn.xiw.compiler.symbols.ScalarType;
 import lombok.Getter;
 
 public class IntLiteral extends ExprAst {
@@ -8,7 +7,7 @@ public class IntLiteral extends ExprAst {
     private final int value;
 
     public IntLiteral(int value) {
-        super(ScalarType.INT_TYPE);
+        super(BuiltinType.INT_TYPE);
         this.value = value;
     }
 
