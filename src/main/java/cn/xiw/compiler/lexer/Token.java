@@ -79,4 +79,18 @@ public class Token {
         return stringTable.get(index);
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (obj instanceof Token) {
+            var tokObj = (Token) obj;
+            return tokObj.type == type && (tokObj.index == -1 && index == -1
+                    || tokObj.index >= 0 && index >= 0 && stringTable
+                            .get(tokObj.index) == stringTable.get(index));
+        }
+        return false;
+    }
+
 }

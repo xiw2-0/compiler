@@ -9,7 +9,7 @@ public class Lexer {
     public static int line = 1;
 
     private final BufferedReader reader;
-    private char peek = ' ';
+    private int peek = ' ';
 
     private TokenTypeUtil tokenTypeUtil = TokenTypeUtil.instance();
 
@@ -26,7 +26,7 @@ public class Lexer {
             readch();
         }
         // 1. check eof
-        if (peek == 0xffff) {
+        if (peek == -1) {
             return Token.eofTok();
         }
         // 2. check keywords and identifiers
@@ -50,13 +50,25 @@ public class Lexer {
         return punctuator();
     }
 
+    /**
+     * Reads in a new character.
+     * 
+     * @throws IOException
+     */
     private void readch() throws IOException {
-        peek = (char) reader.read();
+        peek = reader.read();
+        System.out.println("read: " + peek + " ch:" + (char) peek);
     }
 
-    // read, match, consume
+    /**
+     * Matches the expected char. If matched, consumes it and reads a new one;
+     * else does nothing.
+     * 
+     * @param expected expected char
+     * @return true if consumed expected char successfully
+     * @throws IOException
+     */
     private boolean readch(char expected) throws IOException {
-        readch();
         if (expected == peek) {
             readch();
             return true;
@@ -87,9 +99,9 @@ public class Lexer {
      */
     private Token constant() throws IOException {
         // char: 'letter', escaped char is not supported yet
-        if (peek == '\'') {
+        if (readch('\'')) {
+            var normalChar = Token.constCharTok((char) peek);
             readch();
-            var normalChar = Token.constCharTok(peek);
             if (!readch('\'')) {
                 error("Expect a \'");
             }
@@ -104,7 +116,7 @@ public class Lexer {
                 readch();
             }
             // float
-            if (peek == '.') {
+            if (readch('.')) {
                 double floatValue = value;
                 double decimal = .1;
                 while (Character.isDigit(peek)) {
@@ -126,7 +138,7 @@ public class Lexer {
     private Token stringLiteral() throws IOException {
         var strBuilder = new StringBuilder();
         while (peek != '\'') {
-            strBuilder.append(peek);
+            strBuilder.append((char) peek);
             readch();
         }
 
@@ -137,7 +149,7 @@ public class Lexer {
      * Returns punctuators.
      */
     private Token punctuator() throws IOException {
-        String punctuator = "" + peek;
+        String punctuator = "" + (char) peek;
         switch (peek) {
         case '[':
         case ']':
@@ -150,19 +162,24 @@ public class Lexer {
         case '%':
         case '+':
         case '-':
+        case ';':
+            readch();
             break;
         case '<':
         case '>':
         case '=':
         case '!':
+            readch();
             if (readch('='))
                 punctuator += '=';
             break;
         case '&':
+            readch();
             if (readch('&'))
                 punctuator += '&';
             break;
         case '|':
+            readch();
             if (readch('|'))
                 punctuator += '|';
             break;
