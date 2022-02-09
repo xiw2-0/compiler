@@ -88,9 +88,15 @@ public class Token {
             var tokObj = (Token) obj;
             return tokObj.type == type && (tokObj.index == -1 && index == -1
                     || tokObj.index >= 0 && index >= 0 && stringTable
-                            .get(tokObj.index) == stringTable.get(index));
+                            .get(tokObj.index).equals(stringTable.get(index)));
         }
         return false;
+    }
+
+    @Override
+    public String toString() {
+        String value = index == -1 ? "" : stringTable.get(index);
+        return String.format("(%s: %s)", type.toString(), value);
     }
 
 }

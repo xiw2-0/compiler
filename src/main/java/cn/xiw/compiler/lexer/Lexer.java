@@ -57,7 +57,6 @@ public class Lexer {
      */
     private void readch() throws IOException {
         peek = reader.read();
-        System.out.println("read: " + peek + " ch:" + (char) peek);
     }
 
     /**
@@ -81,8 +80,8 @@ public class Lexer {
      */
     private Token identifier() throws IOException {
         var strBuilder = new StringBuilder();
-        while (Character.isLetterOrDigit(peek)) {
-            strBuilder.append(peek);
+        while (Character.isLetterOrDigit((char) peek)) {
+            strBuilder.append((char) peek);
             readch();
         }
         var id = strBuilder.toString();

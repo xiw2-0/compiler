@@ -29,6 +29,25 @@ public class LexerTest {
         assertTokens(expectedToks, toks);
     }
 
+    @Test
+    void testVarDeclAndAssign() throws IOException {
+        String srcCodes = "int num;\nnum = 100;\n";
+        var expectedToks = List.of(Token.keywordTok("int"),
+                Token.identifierTok("num"), Token.punctTok(";"),
+                Token.identifierTok("num"), Token.punctTok("="),
+                Token.constIntTok(100), Token.punctTok(";"), Token.eofTok());
+        lexer = new Lexer(new ByteArrayInputStream(srcCodes.getBytes()));
+
+        var toks = new ArrayList<Token>();
+        Token curTok;
+        do {
+            curTok = lexer.scan();
+            toks.add(curTok);
+        } while (curTok.getType() != TokenType.EOF);
+
+        assertTokens(expectedToks, toks);
+    }
+
     private void assertTokens(List<Token> expected, List<Token> actual) {
         assertEquals(expected.size(), actual.size());
         for (int i = 0; i < expected.size(); ++i) {
