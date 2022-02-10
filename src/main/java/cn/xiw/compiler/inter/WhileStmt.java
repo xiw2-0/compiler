@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- * WhileStmt: while (expr) {stmt}
+ * WhileStmt: while (expr) stmt
  */
 @Getter
 public class WhileStmt extends StmtAst {

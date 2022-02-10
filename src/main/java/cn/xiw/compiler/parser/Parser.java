@@ -60,16 +60,29 @@ public class Parser {
         look = lexer.scan();
     }
 
-    // match and move
-    private void match(TokenType expectedTokenType) throws IOException {
+    private void eat(TokenType expectedTokenType) throws IOException {
         if (look.getType() != expectedTokenType) {
-            error("Syntax error");
+            error(String.format("Syntax error. Expected: %s; actual: %s",
+                    expectedTokenType, look.getType()));
         }
+    }
+
+    // eat and move
+    private void match(TokenType expectedTokenType) throws IOException {
+        eat(expectedTokenType);
         move();
     }
 
+    /**
+     * program -> block EOF
+     * 
+     * @return
+     * @throws IOException
+     */
     public AstNode parse() throws IOException {
-        return block();
+        var program = block();
+        eat(TokenType.EOF);
+        return program;
     }
 
     /**
@@ -359,11 +372,17 @@ public class Parser {
             }
             return idRef;
         case CONST_CHAR:
-            return new CharLiteral(look.valueChar());
+            var constChar = new CharLiteral(look.valueChar());
+            match(TokenType.CONST_CHAR);
+            return constChar;
         case CONST_FLOAT:
-            return new FloatLiteral(look.valueFloat());
+            var constFloat = new FloatLiteral(look.valueFloat());
+            match(TokenType.CONST_FLOAT);
+            return constFloat;
         case CONST_INT:
-            return new IntLiteral(look.valueInt());
+            var constInt = new IntLiteral(look.valueInt());
+            match(TokenType.CONST_INT);
+            return constInt;
         default:
             error("Syntax error");
             ;

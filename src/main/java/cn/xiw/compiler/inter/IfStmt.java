@@ -7,7 +7,7 @@ import lombok.Getter;
  */
 @Getter
 public class IfStmt extends StmtAst {
-    private boolean hasElse = false;
+    private boolean containingElse = false;
     private final ExprAst expr;
     private StmtAst ifStmt, elseStmt;
 
@@ -16,7 +16,7 @@ public class IfStmt extends StmtAst {
         this.ifStmt = ifStmt;
         this.elseStmt = elseStmt;
         if (elseStmt != null) {
-            hasElse = true;
+            containingElse = true;
         }
     }
 
