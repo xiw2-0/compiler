@@ -10,6 +10,16 @@ public class Token {
 
     private final int index;
 
+    @Getter
+    private final int tokenLine;
+
+    @Getter
+    private static int lineNum = 0;
+
+    static void incLineNum() {
+        lineNum++;
+    }
+
     private static ArrayList<String> stringTable = new ArrayList<>();
 
     private static TokenTypeUtil tokenTypeUtil = TokenTypeUtil.instance();
@@ -17,6 +27,7 @@ public class Token {
     private Token(TokenType type, int index) {
         this.type = type;
         this.index = index;
+        tokenLine = lineNum;
     }
 
     public static Token eofTok() {
@@ -79,6 +90,9 @@ public class Token {
         return stringTable.get(index);
     }
 
+    /**
+     * Ignores the @attribute tokenLine when comparing.
+     */
     @Override
     public boolean equals(Object obj) {
         if (obj == this) {

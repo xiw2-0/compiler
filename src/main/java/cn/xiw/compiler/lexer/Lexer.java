@@ -6,8 +6,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 public class Lexer {
-    public static int line = 1;
-
     private final BufferedReader reader;
     private int peek = ' ';
 
@@ -21,7 +19,7 @@ public class Lexer {
         // 0. skip spaces
         while (Character.isWhitespace(peek)) {
             if (peek == '\n') {
-                line++;
+                Token.incLineNum();
             }
             readch();
         }
@@ -190,7 +188,7 @@ public class Lexer {
     }
 
     private void error(String message) {
-        throw new LexException(
-                String.format("Lexical error at line %d: %s", line, message));
+        throw new LexException(String.format("Lexical error at line %d: %s",
+                Token.getLineNum(), message));
     }
 }
