@@ -12,4 +12,17 @@ public class ArrayType extends Type {
         of = baseType;
         this.size = size;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (obj instanceof ArrayType) {
+            var arrayTypeObj = (ArrayType) obj;
+            return arrayTypeObj.of.equals(of) && arrayTypeObj.size == size
+                    && arrayTypeObj.getTypeName().equals(getTypeName());
+        }
+        return false;
+    }
 }

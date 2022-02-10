@@ -62,8 +62,9 @@ public class Parser {
 
     private void eat(TokenType expectedTokenType) throws IOException {
         if (look.getType() != expectedTokenType) {
-            error(String.format("Syntax error. Expected: %s; actual: %s",
-                    expectedTokenType, look.getType()));
+            error(String.format(
+                    "Syntax error at line %d. Expected: %s; actual: %s",
+                    look.getTokenLine(), expectedTokenType, look.getType()));
         }
     }
 
@@ -128,9 +129,9 @@ public class Parser {
             return new IfStmt(boolExpr, ifStmt, elseStmt);
         case KW_WHILE: // stmt -> while (expr) stmt
             match(TokenType.KW_WHILE);
-            match(TokenType.PUNCT_R_PAR);
-            boolExpr = bool();
             match(TokenType.PUNCT_L_PAR);
+            boolExpr = bool();
+            match(TokenType.PUNCT_R_PAR);
             var whileStmt = new WhileStmt(boolExpr);
             var oldEnclosing = currentEnclosingStmt;
             whileStmt.setStmt(stmt());
@@ -218,9 +219,9 @@ public class Parser {
             return new AssignStmt(declRef, expr);
         }
         // id[index] = bool;
-        match(TokenType.PUNCT_R_SQR);
-        var index = bool();
         match(TokenType.PUNCT_L_SQR);
+        var index = bool();
+        match(TokenType.PUNCT_R_SQR);
 
         match(TokenType.PUNCT_EQ);
         var expr = bool();
@@ -332,14 +333,13 @@ public class Parser {
      * @throws IOException
      */
     private ExprAst unary() throws IOException {
-        var unary = factor();
-        while (look.getType() == TokenType.PUNCT_NOT
+        if (look.getType() == TokenType.PUNCT_NOT
                 || look.getType() == TokenType.PUNCT_MINUS) {
             var op = look.getType();
             move();
-            unary = new UnaryOp(op, unary);
+            return new UnaryOp(op, unary());
         }
-        return unary;
+        return factor();
     }
 
     /**
