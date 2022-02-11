@@ -9,7 +9,7 @@ import cn.xiw.compiler.inter.AssignElemStmt;
 import cn.xiw.compiler.inter.AssignStmt;
 import cn.xiw.compiler.inter.AstNode;
 import cn.xiw.compiler.inter.BinaryOp;
-import cn.xiw.compiler.inter.BlockStmt;
+import cn.xiw.compiler.inter.CompoundStmt;
 import cn.xiw.compiler.inter.BreakStmt;
 import cn.xiw.compiler.inter.CharLiteral;
 import cn.xiw.compiler.inter.DeclRefExpr;
@@ -91,11 +91,11 @@ public class Parser {
      * 
      * @throws IOException
      */
-    private BlockStmt block() throws IOException {
+    private CompoundStmt block() throws IOException {
         match(TokenType.PUNCT_L_BAR);
         Env savedEnv = top;
         top = new Env(top);
-        var blockStmt = new BlockStmt();
+        var blockStmt = new CompoundStmt();
         while (look.getType() != TokenType.PUNCT_R_BAR) {
             blockStmt.addStmt(stmt());
         }

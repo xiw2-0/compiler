@@ -13,7 +13,7 @@ import cn.xiw.compiler.inter.ArrayType;
 import cn.xiw.compiler.inter.AssignElemStmt;
 import cn.xiw.compiler.inter.AssignStmt;
 import cn.xiw.compiler.inter.BinaryOp;
-import cn.xiw.compiler.inter.BlockStmt;
+import cn.xiw.compiler.inter.CompoundStmt;
 import cn.xiw.compiler.inter.BuiltinType;
 import cn.xiw.compiler.inter.DeclStmt;
 import cn.xiw.compiler.inter.IfStmt;
@@ -38,7 +38,7 @@ public class ParserTest {
         parser = new Parser(lexer);
 
         // act
-        var ast = (BlockStmt) parser.parse();
+        var ast = (CompoundStmt) parser.parse();
 
         // assert
         var stmts = ast.getStmts();
@@ -55,7 +55,7 @@ public class ParserTest {
         parser = new Parser(lexer);
 
         // act
-        var ast = (BlockStmt) parser.parse();
+        var ast = (CompoundStmt) parser.parse();
 
         // assert
         var stmts = ast.getStmts();
@@ -76,7 +76,7 @@ public class ParserTest {
         parser = new Parser(lexer);
 
         // act
-        var ast = (BlockStmt) parser.parse();
+        var ast = (CompoundStmt) parser.parse();
 
         // assert
         var stmts = ast.getStmts();
@@ -103,7 +103,7 @@ public class ParserTest {
         parser = new Parser(lexer);
 
         // act
-        var ast = (BlockStmt) parser.parse();
+        var ast = (CompoundStmt) parser.parse();
 
         // assert
         var stmts = ast.getStmts();
@@ -119,7 +119,7 @@ public class ParserTest {
         // if
         assertTrue(ifStmt.getIfStmt() == NullStmt.instance());
         // else
-        var elseSubStmt = (BlockStmt) ifStmt.getElseStmt();
+        var elseSubStmt = (CompoundStmt) ifStmt.getElseStmt();
         assertTrue(elseSubStmt.getStmts().size() == 1);
         assertTrue(elseSubStmt.getStmts().get(0) == NullStmt.instance());
     }
@@ -136,7 +136,7 @@ public class ParserTest {
         parser = new Parser(lexer);
 
         // act
-        var ast = (BlockStmt) parser.parse();
+        var ast = (CompoundStmt) parser.parse();
 
         // assert
         var stmts = ast.getStmts();
@@ -149,7 +149,7 @@ public class ParserTest {
         assertTrue(((IntLiteral) (expr.getExpr2())).getValue() == 10);
         assertTrue(expr.getOp() == TokenType.PUNCT_GE);
 
-        var bodyStmt = (BlockStmt) whileStmt.getStmt();
+        var bodyStmt = (CompoundStmt) whileStmt.getStmt();
         assertTrue(bodyStmt.getStmts().size() == 1);
         assertTrue(bodyStmt.getStmts().get(0) == NullStmt.instance());
     }
@@ -168,7 +168,7 @@ public class ParserTest {
         parser = new Parser(lexer);
 
         // act
-        var ast = (BlockStmt) parser.parse();
+        var ast = (CompoundStmt) parser.parse();
 
         // assert
         var stmts = ast.getStmts();

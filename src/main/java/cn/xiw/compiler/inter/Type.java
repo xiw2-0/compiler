@@ -3,8 +3,7 @@ package cn.xiw.compiler.inter;
 import lombok.Getter;
 
 /**
- * Type for char, int, and float. Mainly for type conversion and indicating expr
- * type.
+ * Type includes BuiltinType (e.g. void, char, int, float) and StructType.
  */
 @Getter
 public abstract class Type {

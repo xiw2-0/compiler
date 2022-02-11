@@ -5,18 +5,16 @@ import java.util.ArrayList;
 import lombok.Getter;
 
 /**
- * Function definition.
+ * Function proto declaration.
  */
 @Getter
-public class FuncDecl extends DeclAst {
+public class ProtoDecl extends DeclAst {
     private final ArrayList<DeclAst> params = new ArrayList<>();
     private final String identifier;
-    private final CompoundStmt body;
 
-    FuncDecl(Type returnType, String identifier, CompoundStmt body) {
+    ProtoDecl(Type returnType, String identifier) {
         super(returnType);
         this.identifier = identifier;
-        this.body = body;
     }
 
     void addParam(DeclAst paramDecl) {

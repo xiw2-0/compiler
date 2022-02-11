@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class BlockStmt extends StmtAst {
+public class CompoundStmt extends StmtAst {
     private final ArrayList<StmtAst> stmts = new ArrayList<>();
 
     public void addStmt(StmtAst stmt) {

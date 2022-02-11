@@ -33,13 +33,13 @@ public interface AstVisitor {
 
     void visit(NullStmt nullStmt);
 
-    void visit(BlockStmt blockStmt);
+    void visit(CompoundStmt blockStmt);
 
     void visit(DeclStmt declStmt);
 
-    void visit(FuncDecl funcDecl);
+    void visit(ProtoDecl protoDecl);
 
     void visit(VarDecl varDecl);
 
-    void visit(ParamDecl paramDecl);
+    void visit(FuncDecl funcDecl);
 }

@@ -2,13 +2,16 @@ package cn.xiw.compiler.inter;
 
 import lombok.Getter;
 
+/**
+ * Variable declaration.
+ */
 @Getter
 public class VarDecl extends DeclAst {
-    private final Type type;
+    private final String identifier;
 
     public VarDecl(String id, Type type) {
-        super(id);
-        this.type = type;
+        super(type);
+        this.identifier = id;
     }
 
     @Override
