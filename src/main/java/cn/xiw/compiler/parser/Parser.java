@@ -1,6 +1,7 @@
 package cn.xiw.compiler.parser;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -9,6 +10,7 @@ import cn.xiw.compiler.inter.ExprStmt;
 import cn.xiw.compiler.inter.AstNode;
 import cn.xiw.compiler.inter.BinaryOp;
 import cn.xiw.compiler.inter.CompoundStmt;
+import cn.xiw.compiler.inter.DeclAst;
 import cn.xiw.compiler.inter.BreakStmt;
 import cn.xiw.compiler.inter.CharLiteral;
 import cn.xiw.compiler.inter.DeclRefExpr;
@@ -16,12 +18,15 @@ import cn.xiw.compiler.inter.DeclStmt;
 import cn.xiw.compiler.inter.ElemAccessOp;
 import cn.xiw.compiler.inter.ExprAst;
 import cn.xiw.compiler.inter.FloatLiteral;
+import cn.xiw.compiler.inter.FuncDecl;
 import cn.xiw.compiler.inter.IfStmt;
 import cn.xiw.compiler.inter.IntLiteral;
 import cn.xiw.compiler.inter.NullStmt;
+import cn.xiw.compiler.inter.ReturnStmt;
 import cn.xiw.compiler.inter.BuiltinType;
 import cn.xiw.compiler.inter.CallExpr;
 import cn.xiw.compiler.inter.StmtAst;
+import cn.xiw.compiler.inter.TranslationUnitAst;
 import cn.xiw.compiler.inter.Type;
 import cn.xiw.compiler.inter.UnaryOp;
 import cn.xiw.compiler.inter.VarDecl;
@@ -38,6 +43,7 @@ public class Parser {
     private Env top = null; // the top symbol table
 
     private StmtAst currentEnclosingStmt = null;
+    private String currentFuncDecl = null;
 
     private Set<TokenType> relOps;
 
@@ -75,15 +81,63 @@ public class Parser {
     }
 
     /**
-     * program -> block EOF
+     * translation-unit -> translation-unit decl | decl | EOF
      * 
      * @return
      * @throws IOException
      */
     public AstNode parse() throws IOException {
-        var program = block();
+        var decls = new ArrayList<DeclAst>();
+        while (look.getType() != TokenType.EOF) {
+            decls.add(decl());
+        }
         eat(TokenType.EOF);
-        return program;
+        return TranslationUnitAst.builder().declarations(decls).build();
+    }
+
+    /**
+     * decl -> func-decl | var-decl
+     * 
+     * @return
+     * @throws IOException
+     */
+    DeclAst decl() throws IOException {
+        var declType = type();
+        var idTok = look;
+        match(TokenType.IDENTIFIER);
+        // var-decl
+        if (look.getType() == TokenType.PUNCT_SEMI) {
+            match(TokenType.PUNCT_SEMI);
+            return VarDecl.builder().identifier(idTok.identifier())
+                    .type(declType).build();
+        }
+        // func-decl
+        return funcDecl(declType, idTok.identifier());
+    }
+
+    /**
+     * func-decl -> type id(param-decl-list) compound-stmt
+     * 
+     * @return
+     * @throws IOException
+     */
+    FuncDecl funcDecl(Type type, String id) throws IOException {
+        var paramDeclList = new ArrayList<VarDecl>();
+        match(TokenType.PUNCT_L_PAR);
+        while (look.getType() != TokenType.PUNCT_R_PAR) {
+            var paraType = type();
+            var paraIdTok = look;
+            match(TokenType.IDENTIFIER);
+            paramDeclList.add(VarDecl.builder()
+                    .identifier(paraIdTok.identifier()).type(paraType).build());
+            if (look.getType() != TokenType.PUNCT_R_PAR) {
+                match(TokenType.PUNCT_COMMA);
+            }
+        }
+        match(TokenType.PUNCT_R_PAR);
+        currentFuncDecl = id;
+        return FuncDecl.builder().returnType(type).identifier(id)
+                .params(paramDeclList).body(block()).build();
     }
 
     /**
@@ -91,7 +145,7 @@ public class Parser {
      * 
      * @throws IOException
      */
-    private CompoundStmt block() throws IOException {
+    CompoundStmt block() throws IOException {
         match(TokenType.PUNCT_L_BAR);
         Env savedEnv = top;
         top = new Env(top);
@@ -110,7 +164,7 @@ public class Parser {
      * @return
      * @throws IOException
      */
-    private StmtAst stmt() throws IOException {
+    StmtAst stmt() throws IOException {
         switch (look.getType()) {
         case PUNCT_SEMI: // stmt -> ;
             move();
@@ -141,6 +195,15 @@ public class Parser {
             match(TokenType.KW_BREAK);
             match(TokenType.PUNCT_SEMI);
             return new BreakStmt(currentEnclosingStmt);
+        case KW_RET: // stmt -> return expr; | return ;
+            match(TokenType.KW_RET);
+            ExprAst retExpr = null;
+            if (look.getType() != TokenType.PUNCT_SEMI) {
+                retExpr = assignment();
+            }
+            match(TokenType.PUNCT_SEMI);
+            return ReturnStmt.builder().funcId(currentFuncDecl).retExpr(retExpr)
+                    .build();
         case PUNCT_L_BAR: // stmt -> block
             return block();
         case IDENTIFIER: // stmt -> expr;
@@ -158,14 +221,15 @@ public class Parser {
      * @return
      * @throws IOException
      */
-    private DeclStmt declStmt() throws IOException {
+    DeclStmt declStmt() throws IOException {
         Type type = type();
 
         var idTok = look;
         match(TokenType.IDENTIFIER);
         match(TokenType.PUNCT_SEMI);
 
-        var id = new VarDecl(idTok.identifier(), type);
+        var id = VarDecl.builder().identifier(idTok.identifier()).type(type)
+                .build();
         // add to env
         top.addSymbol(idTok.identifier(), id);
         return new DeclStmt(id);
@@ -209,7 +273,7 @@ public class Parser {
      * @return
      * @throws IOException
      */
-    private ExprAst assignment() throws IOException {
+    ExprAst assignment() throws IOException {
         var boolExpr = bool();
         if (look.getType() == TokenType.PUNCT_EQ) {
             match(TokenType.PUNCT_EQ);

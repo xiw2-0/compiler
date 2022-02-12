@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import cn.xiw.compiler.inter.ExprStmt;
-import cn.xiw.compiler.inter.ArrayDecl;
 import cn.xiw.compiler.inter.AstNode;
 import cn.xiw.compiler.inter.AstVisitor;
 import cn.xiw.compiler.inter.BinaryOp;
@@ -25,6 +24,7 @@ import cn.xiw.compiler.inter.IfStmt;
 import cn.xiw.compiler.inter.IntLiteral;
 import cn.xiw.compiler.inter.NullStmt;
 import cn.xiw.compiler.inter.StringLiteral;
+import cn.xiw.compiler.inter.TranslationUnitAst;
 import cn.xiw.compiler.inter.UnaryOp;
 import cn.xiw.compiler.inter.VarDecl;
 import cn.xiw.compiler.inter.WhileStmt;
@@ -255,7 +255,7 @@ public class CodeGenerator implements AstVisitor {
     }
 
     @Override
-    public void visit(ArrayDecl arrayDecl) {
+    public void visit(TranslationUnitAst translationUnitAst) {
         // TODO Auto-generated method stub
 
     }

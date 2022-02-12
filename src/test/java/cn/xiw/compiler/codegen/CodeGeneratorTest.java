@@ -40,7 +40,8 @@ public class CodeGeneratorTest {
     void testVarDecl() {
         // arrange
         // int num;
-        var varDecl = new VarDecl("num", BuiltinType.INT_TYPE);
+        var varDecl = VarDecl.builder().identifier("num")
+                .type(BuiltinType.INT_TYPE).build();
         var declStmt = new DeclStmt(varDecl);
         // act
         declStmt.accept(codeGenerator);
@@ -52,7 +53,8 @@ public class CodeGeneratorTest {
     void testAssignStmt() {
         // arrange
         // i = 10;
-        var varDecl = new VarDecl("i", BuiltinType.INT_TYPE);
+        var varDecl = VarDecl.builder().identifier("i")
+                .type(BuiltinType.INT_TYPE).build();
         var assignStmt = new ExprStmt(new BinaryOp(TokenType.PUNCT_EQ,
                 new DeclRefExpr(varDecl), new IntLiteral(10)));
         // act
@@ -65,7 +67,8 @@ public class CodeGeneratorTest {
     void testExpr() {
         // arrange
         // 10 + i * 9
-        var varDecl = new VarDecl("i", BuiltinType.INT_TYPE);
+        var varDecl = VarDecl.builder().identifier("i")
+                .type(BuiltinType.INT_TYPE).build();
         var binaryOp = new BinaryOp(TokenType.PUNCT_PLUS, new IntLiteral(10),
                 new BinaryOp(TokenType.PUNCT_STAR, new DeclRefExpr(varDecl),
                         new IntLiteral(9)));
@@ -84,7 +87,8 @@ public class CodeGeneratorTest {
         // if (10 >= 90) i = 90; else i = 10;
         var expr = new BinaryOp(TokenType.PUNCT_GE, new IntLiteral(10),
                 new IntLiteral(90));
-        var varDecl = new VarDecl("i", BuiltinType.INT_TYPE);
+        var varDecl = VarDecl.builder().identifier("i")
+                .type(BuiltinType.INT_TYPE).build();
         var ifSubStmt = new ExprStmt(new BinaryOp(TokenType.PUNCT_EQ,
                 new DeclRefExpr(varDecl), new IntLiteral(90)));
         var elseSubStmt = new ExprStmt(new BinaryOp(TokenType.PUNCT_EQ,
@@ -105,8 +109,8 @@ public class CodeGeneratorTest {
     void testElemAccessOp() {
         // arrange
         // { int nums[10]; nums[1] = nums[0] + 1; }
-        var varDecl = new VarDecl("nums",
-                new ArrayType(BuiltinType.INT_TYPE, 10));
+        var varDecl = VarDecl.builder().identifier("nums")
+                .type(new ArrayType(BuiltinType.INT_TYPE, 10)).build();
         var declStmt = new DeclStmt(varDecl);
         var leftElem = new ElemAccessOp(new DeclRefExpr(varDecl),
                 new IntLiteral(4));

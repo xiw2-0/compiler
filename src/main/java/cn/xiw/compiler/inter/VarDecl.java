@@ -1,5 +1,6 @@
 package cn.xiw.compiler.inter;
 
+import lombok.Builder;
 import lombok.Getter;
 
 /**
@@ -9,9 +10,10 @@ import lombok.Getter;
 public class VarDecl extends DeclAst {
     private final String identifier;
 
-    public VarDecl(String id, Type type) {
+    @Builder
+    VarDecl(String identifier, Type type) {
         super(type);
-        this.identifier = id;
+        this.identifier = identifier;
     }
 
     @Override

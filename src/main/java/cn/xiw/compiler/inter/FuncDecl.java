@@ -2,6 +2,7 @@ package cn.xiw.compiler.inter;
 
 import java.util.ArrayList;
 
+import lombok.Builder;
 import lombok.Getter;
 
 /**
@@ -9,18 +10,17 @@ import lombok.Getter;
  */
 @Getter
 public class FuncDecl extends DeclAst {
-    private final ArrayList<DeclAst> params = new ArrayList<>();
+    private final ArrayList<VarDecl> params;
     private final String identifier;
-    private final CompoundStmt body;
+    private CompoundStmt body;
 
-    FuncDecl(Type returnType, String identifier, CompoundStmt body) {
+    @Builder
+    FuncDecl(Type returnType, String identifier, ArrayList<VarDecl> params,
+            CompoundStmt body) {
         super(returnType);
         this.identifier = identifier;
+        this.params = params;
         this.body = body;
-    }
-
-    void addParam(DeclAst paramDecl) {
-        params.add(paramDecl);
     }
 
     @Override

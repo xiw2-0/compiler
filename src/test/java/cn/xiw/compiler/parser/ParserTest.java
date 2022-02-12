@@ -11,6 +11,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import cn.xiw.compiler.inter.ExprStmt;
+import cn.xiw.compiler.inter.FloatLiteral;
+import cn.xiw.compiler.inter.FuncDecl;
 import cn.xiw.compiler.inter.ArrayType;
 import cn.xiw.compiler.inter.BinaryOp;
 import cn.xiw.compiler.inter.CompoundStmt;
@@ -21,6 +23,9 @@ import cn.xiw.compiler.inter.ElemAccessOp;
 import cn.xiw.compiler.inter.IfStmt;
 import cn.xiw.compiler.inter.IntLiteral;
 import cn.xiw.compiler.inter.NullStmt;
+import cn.xiw.compiler.inter.ReturnStmt;
+import cn.xiw.compiler.inter.TranslationUnitAst;
+import cn.xiw.compiler.inter.VarDecl;
 import cn.xiw.compiler.inter.WhileStmt;
 import cn.xiw.compiler.lexer.Lexer;
 import cn.xiw.compiler.lexer.Token;
@@ -40,7 +45,7 @@ public class ParserTest {
         parser = new Parser(lexer);
 
         // act
-        var ast = (CompoundStmt) parser.parse();
+        var ast = (CompoundStmt) parser.block();
 
         // assert
         var stmts = ast.getStmts();
@@ -57,7 +62,7 @@ public class ParserTest {
         parser = new Parser(lexer);
 
         // act
-        var ast = (CompoundStmt) parser.parse();
+        var ast = (CompoundStmt) parser.block();
 
         // assert
         var stmts = ast.getStmts();
@@ -78,7 +83,7 @@ public class ParserTest {
         parser = new Parser(lexer);
 
         // act
-        var ast = (CompoundStmt) parser.parse();
+        var ast = (CompoundStmt) parser.block();
 
         // assert
         var stmts = ast.getStmts();
@@ -107,7 +112,7 @@ public class ParserTest {
         parser = new Parser(lexer);
 
         // act
-        var ast = (CompoundStmt) parser.parse();
+        var ast = (CompoundStmt) parser.block();
 
         // assert
         var stmts = ast.getStmts();
@@ -140,7 +145,7 @@ public class ParserTest {
         parser = new Parser(lexer);
 
         // act
-        var ast = (CompoundStmt) parser.parse();
+        var ast = (CompoundStmt) parser.block();
 
         // assert
         var stmts = ast.getStmts();
@@ -172,7 +177,7 @@ public class ParserTest {
         parser = new Parser(lexer);
 
         // act
-        var ast = (CompoundStmt) parser.parse();
+        var ast = (CompoundStmt) parser.block();
 
         // assert
         var stmts = ast.getStmts();
@@ -193,6 +198,62 @@ public class ParserTest {
         assertEquals(0, ((IntLiteral) indexExpr.getExpr1()).getValue());
         // right
         assertEquals(100, ((IntLiteral) elemAssign.getExpr2()).getValue());
+    }
+
+    @Test
+    void testVarDecl() throws IOException {
+        // arrange
+        when(lexer.scan()).thenReturn(Token.keywordTok("int"),
+                Token.identifierTok("num"), Token.punctTok(";"),
+                Token.eofTok());
+        parser = new Parser(lexer);
+
+        // act
+        var unitAst = (TranslationUnitAst) parser.parse();
+
+        // assert
+        var decls = unitAst.getDeclarations();
+        assertEquals(1, decls.size());
+        var varDecl = (VarDecl) decls.get(0);
+        assertEquals(BuiltinType.INT_TYPE, varDecl.getType());
+        assertEquals("num", varDecl.getIdentifier());
+    }
+
+    @Test
+    void testFuncDecl() throws IOException {
+        // arrange
+        // int getnum(float value, int count) {return 1.0;}
+        when(lexer.scan()).thenReturn(Token.keywordTok("int"),
+                Token.identifierTok("getnum"), Token.punctTok("("),
+                Token.keywordTok("float"), Token.identifierTok("value"),
+                Token.punctTok(","), Token.keywordTok("int"),
+                Token.identifierTok("count"), Token.punctTok(")"),
+                Token.punctTok("{"), Token.keywordTok("return"),
+                Token.constFloatTok(1.0), Token.punctTok(";"),
+                Token.punctTok("}"), Token.eofTok());
+        parser = new Parser(lexer);
+
+        // act
+        var unitAst = (TranslationUnitAst) parser.parse();
+
+        // assert
+        var decls = unitAst.getDeclarations();
+        assertEquals(1, decls.size());
+        var funcDecl = (FuncDecl) decls.get(0);
+        assertEquals(BuiltinType.INT_TYPE, funcDecl.getType());
+        assertEquals("getnum", funcDecl.getIdentifier());
+        var params = funcDecl.getParams();
+        assertEquals(2, params.size());
+        assertEquals(BuiltinType.FLOAT_TYPE, params.get(0).getType());
+        assertEquals("value", params.get(0).getIdentifier());
+        assertEquals(BuiltinType.INT_TYPE, params.get(1).getType());
+        assertEquals("count", params.get(1).getIdentifier());
+        var body = funcDecl.getBody().getStmts();
+        assertEquals(1, body.size());
+        assertEquals("getnum", ((ReturnStmt) body.get(0)).getFuncId());
+        assertEquals(1.0,
+                ((FloatLiteral) ((ReturnStmt) body.get(0)).getRetExpr())
+                        .getValue());
     }
 
 }
