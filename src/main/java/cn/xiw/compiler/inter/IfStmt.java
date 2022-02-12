@@ -1,5 +1,6 @@
 package cn.xiw.compiler.inter;
 
+import lombok.Builder;
 import lombok.Getter;
 
 /**
@@ -9,9 +10,10 @@ import lombok.Getter;
 public class IfStmt extends StmtAst {
     private boolean containingElse = false;
     private final ExprAst expr;
-    private StmtAst ifStmt, elseStmt;
+    private final StmtAst ifStmt, elseStmt;
 
-    public IfStmt(ExprAst expr, StmtAst ifStmt, StmtAst elseStmt) {
+    @Builder
+    IfStmt(ExprAst expr, StmtAst ifStmt, StmtAst elseStmt) {
         this.expr = expr;
         this.ifStmt = ifStmt;
         this.elseStmt = elseStmt;

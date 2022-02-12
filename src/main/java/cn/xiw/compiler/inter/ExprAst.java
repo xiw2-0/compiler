@@ -1,9 +1,13 @@
 package cn.xiw.compiler.inter;
 
-public abstract class ExprAst extends AstNode {
-    protected final Type type;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-    ExprAst(Type type) {
-        this.type = type;
-    }
+@Getter
+@Setter
+@NoArgsConstructor
+public abstract class ExprAst extends AstNode {
+    String typeId;
+    Type type;
 }

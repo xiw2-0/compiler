@@ -1,13 +1,15 @@
 package cn.xiw.compiler.inter;
 
+import lombok.Builder;
 import lombok.Getter;
 
+@Getter
 public class FloatLiteral extends ExprAst {
-    @Getter
     private final double value;
 
-    public FloatLiteral(double value) {
-        super(BuiltinType.FLOAT_TYPE);
+    @Builder
+    FloatLiteral(double value) {
+        setTypeId("float");
         this.value = value;
     }
 

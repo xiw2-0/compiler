@@ -2,17 +2,13 @@ package cn.xiw.compiler.inter;
 
 import java.util.ArrayList;
 
+import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 @Getter
-@NoArgsConstructor
+@Builder
 public class CompoundStmt extends StmtAst {
-    private final ArrayList<StmtAst> stmts = new ArrayList<>();
-
-    public void addStmt(StmtAst stmt) {
-        stmts.add(stmt);
-    }
+    private final ArrayList<StmtAst> stmts;
 
     @Override
     public void accept(AstVisitor visitor) {

@@ -4,15 +4,10 @@ import lombok.Builder;
 import lombok.Getter;
 
 @Getter
+@Builder
 public class ReturnStmt extends StmtAst {
-    private String funcId;
-    private ExprAst retExpr;
-
-    @Builder
-    ReturnStmt(String funcId, ExprAst retExpr) {
-        this.funcId = funcId;
-        this.retExpr = retExpr;
-    }
+    private final FuncDecl func;
+    private final ExprAst retExpr;
 
     @Override
     public void accept(AstVisitor visitor) {

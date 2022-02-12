@@ -11,8 +11,8 @@ public class VarDecl extends DeclAst {
     private final String identifier;
 
     @Builder
-    VarDecl(String identifier, Type type) {
-        super(type);
+    VarDecl(String identifier, String typeId) {
+        super(typeId);
         this.identifier = identifier;
     }
 

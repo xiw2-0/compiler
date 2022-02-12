@@ -1,14 +1,18 @@
 package cn.xiw.compiler.inter;
 
+import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
 public class DeclRefExpr extends ExprAst {
-    @Getter
-    private final VarDecl varDecl;
+    private final String id;
+    private VarDecl varDecl;
 
-    public DeclRefExpr(VarDecl varDecl) {
-        super(varDecl.getType());
-        this.varDecl = varDecl;
+    @Builder
+    DeclRefExpr(String id) {
+        this.id = id;
     }
 
     @Override

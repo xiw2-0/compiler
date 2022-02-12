@@ -1,6 +1,7 @@
 package cn.xiw.compiler.inter;
 
 import cn.xiw.compiler.lexer.TokenType;
+import lombok.Builder;
 import lombok.Getter;
 
 @Getter
@@ -8,8 +9,8 @@ public class BinaryOp extends ExprAst {
     private final TokenType op;
     private final ExprAst expr1, expr2;
 
-    public BinaryOp(TokenType op, ExprAst expr1, ExprAst expr2) {
-        super(expr1.type);
+    @Builder
+    BinaryOp(TokenType op, ExprAst expr1, ExprAst expr2) {
         this.op = op;
         this.expr1 = expr1;
         this.expr2 = expr2;

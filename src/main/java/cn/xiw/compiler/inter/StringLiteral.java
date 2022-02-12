@@ -1,13 +1,15 @@
 package cn.xiw.compiler.inter;
 
+import lombok.Builder;
 import lombok.Getter;
 
+@Getter
 public class StringLiteral extends ExprAst {
-    @Getter
     private final String value;
 
+    @Builder
     StringLiteral(String value) {
-        super(new ArrayType(BuiltinType.CHAR_TYPE, value.length()));
+        setTypeId("char[]");
         this.value = value;
     }
 

@@ -1,22 +1,16 @@
 package cn.xiw.compiler.inter;
 
+import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 
 /**
  * WhileStmt: while (expr) stmt
  */
 @Getter
+@Builder
 public class WhileStmt extends StmtAst {
     private final ExprAst expr;
-
-    @Setter
-    private StmtAst stmt;
-
-    public WhileStmt(ExprAst expr) {
-        this.expr = expr;
-        stmt = NullStmt.instance();
-    }
+    private final StmtAst stmt;
 
     @Override
     public void accept(AstVisitor visitor) {

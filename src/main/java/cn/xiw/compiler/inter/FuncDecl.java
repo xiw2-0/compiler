@@ -4,18 +4,20 @@ import java.util.ArrayList;
 
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Function definition.
  */
 @Getter
+@Setter
 public class FuncDecl extends DeclAst {
     private final ArrayList<VarDecl> params;
     private final String identifier;
     private CompoundStmt body;
 
     @Builder
-    FuncDecl(Type returnType, String identifier, ArrayList<VarDecl> params,
+    FuncDecl(String returnType, String identifier, ArrayList<VarDecl> params,
             CompoundStmt body) {
         super(returnType);
         this.identifier = identifier;

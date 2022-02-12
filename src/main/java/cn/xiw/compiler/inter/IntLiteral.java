@@ -1,13 +1,15 @@
 package cn.xiw.compiler.inter;
 
+import lombok.Builder;
 import lombok.Getter;
 
+@Getter
 public class IntLiteral extends ExprAst {
-    @Getter
     private final int value;
 
-    public IntLiteral(int value) {
-        super(BuiltinType.INT_TYPE);
+    @Builder
+    IntLiteral(int value) {
+        setTypeId("int");
         this.value = value;
     }
 

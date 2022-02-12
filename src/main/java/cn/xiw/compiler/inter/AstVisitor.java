@@ -41,8 +41,6 @@ public interface AstVisitor {
 
     void visit(VarDecl varDecl);
 
-    void visit(ProtoDecl protoDecl);
-
     void visit(FuncDecl funcDecl);
 
     void visit(TranslationUnitAst translationUnitAst);

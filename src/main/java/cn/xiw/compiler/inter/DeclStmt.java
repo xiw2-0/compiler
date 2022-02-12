@@ -1,10 +1,10 @@
 package cn.xiw.compiler.inter;
 
-import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 
 @Getter
-@AllArgsConstructor
+@Builder
 public class DeclStmt extends StmtAst {
     private final VarDecl varDecl;
 
