@@ -1,5 +1,6 @@
 package cn.xiw.compiler.parser;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -9,13 +10,14 @@ import java.io.IOException;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
+import cn.xiw.compiler.inter.ExprStmt;
 import cn.xiw.compiler.inter.ArrayType;
-import cn.xiw.compiler.inter.AssignElemStmt;
-import cn.xiw.compiler.inter.AssignStmt;
 import cn.xiw.compiler.inter.BinaryOp;
 import cn.xiw.compiler.inter.CompoundStmt;
+import cn.xiw.compiler.inter.DeclRefExpr;
 import cn.xiw.compiler.inter.BuiltinType;
 import cn.xiw.compiler.inter.DeclStmt;
+import cn.xiw.compiler.inter.ElemAccessOp;
 import cn.xiw.compiler.inter.IfStmt;
 import cn.xiw.compiler.inter.IntLiteral;
 import cn.xiw.compiler.inter.NullStmt;
@@ -84,10 +86,12 @@ public class ParserTest {
         var varDecl = ((DeclStmt) stmts.get(0)).getVarDecl();
         assertTrue(varDecl.getIdentifier() == "num");
         assertTrue(varDecl.getType() == BuiltinType.INT_TYPE);
-        var varDeclRef = ((AssignStmt) stmts.get(1)).getId();
-        assertTrue(varDeclRef.getVarDecl() == varDecl);
-        assertTrue(((IntLiteral) ((AssignStmt) stmts.get(1)).getExpr())
-                .getValue() == 100);
+
+        var assignExpr = (BinaryOp) ((ExprStmt) stmts.get(1)).getExpr();
+        assertEquals(TokenType.PUNCT_EQ, assignExpr.getOp());
+        assertEquals(varDecl,
+                ((DeclRefExpr) assignExpr.getExpr1()).getVarDecl());
+        assertEquals(100, ((IntLiteral) assignExpr.getExpr2()).getValue());
     }
 
     @Test
@@ -173,15 +177,22 @@ public class ParserTest {
         // assert
         var stmts = ast.getStmts();
         assertTrue(stmts.size() == 2);
+        // decl stmt
         var varDecl = ((DeclStmt) stmts.get(0)).getVarDecl();
         assertTrue(varDecl.getIdentifier() == "nums");
         assertTrue(varDecl.getType()
                 .equals(new ArrayType(BuiltinType.INT_TYPE, 6)));
-        var elemAccessOp = ((AssignElemStmt) stmts.get(1)).getElem();
-        assertTrue(elemAccessOp.getArrayId().getVarDecl() == varDecl);
-        assertTrue(((IntLiteral) elemAccessOp.getIndex()).getValue() == 0);
-        assertTrue(((IntLiteral) ((AssignElemStmt) stmts.get(1)).getExpr())
-                .getValue() == 100);
+        // assign expr stmt
+        var elemAssign = (BinaryOp) ((ExprStmt) stmts.get(1)).getExpr();
+        assertEquals(TokenType.PUNCT_EQ, elemAssign.getOp());
+        // left
+        var elemAccessOp = (ElemAccessOp) elemAssign.getExpr1();
+        assertEquals(varDecl, elemAccessOp.getArrayId().getVarDecl());
+        var indexExpr = (BinaryOp) elemAccessOp.getIndex();
+        assertEquals(TokenType.PUNCT_STAR, indexExpr.getOp());
+        assertEquals(0, ((IntLiteral) indexExpr.getExpr1()).getValue());
+        // right
+        assertEquals(100, ((IntLiteral) elemAssign.getExpr2()).getValue());
     }
 
 }

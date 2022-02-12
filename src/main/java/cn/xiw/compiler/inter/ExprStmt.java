@@ -3,15 +3,13 @@ package cn.xiw.compiler.inter;
 import lombok.Getter;
 
 /**
- * AssignStmt: id = expr;
+ * ExprStmt: expr;
  */
 @Getter
-public class AssignStmt extends StmtAst {
-    private final DeclRefExpr id;
+public class ExprStmt extends StmtAst {
     private final ExprAst expr;
 
-    public AssignStmt(DeclRefExpr id, ExprAst expr) {
-        this.id = id;
+    public ExprStmt(ExprAst expr) {
         this.expr = expr;
     }
 

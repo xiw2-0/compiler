@@ -5,23 +5,25 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import cn.xiw.compiler.inter.AssignElemStmt;
-import cn.xiw.compiler.inter.AssignStmt;
+import cn.xiw.compiler.inter.ExprStmt;
+import cn.xiw.compiler.inter.ArrayDecl;
 import cn.xiw.compiler.inter.AstNode;
 import cn.xiw.compiler.inter.AstVisitor;
 import cn.xiw.compiler.inter.BinaryOp;
-import cn.xiw.compiler.inter.BlockStmt;
+import cn.xiw.compiler.inter.CompoundStmt;
 import cn.xiw.compiler.inter.BreakStmt;
+import cn.xiw.compiler.inter.CallExpr;
 import cn.xiw.compiler.inter.CharLiteral;
 import cn.xiw.compiler.inter.DeclRefExpr;
 import cn.xiw.compiler.inter.DeclStmt;
 import cn.xiw.compiler.inter.ElemAccessOp;
 import cn.xiw.compiler.inter.FloatLiteral;
 import cn.xiw.compiler.inter.FuncDecl;
+import cn.xiw.compiler.inter.ProtoDecl;
+import cn.xiw.compiler.inter.ReturnStmt;
 import cn.xiw.compiler.inter.IfStmt;
 import cn.xiw.compiler.inter.IntLiteral;
 import cn.xiw.compiler.inter.NullStmt;
-import cn.xiw.compiler.inter.ParamDecl;
 import cn.xiw.compiler.inter.StringLiteral;
 import cn.xiw.compiler.inter.UnaryOp;
 import cn.xiw.compiler.inter.VarDecl;
@@ -91,8 +93,8 @@ public class CodeGenerator implements AstVisitor {
         print("\t" + line + "\n");
     }
 
-    private void emitTempAssign(String tempId, String expr) {
-        emit(tempId + " = " + expr);
+    private void emitAssign(String left, String right) {
+        emit(left + " = " + right);
     }
 
     /**
@@ -108,17 +110,25 @@ public class CodeGenerator implements AstVisitor {
         binaryOp.getExpr1().accept(this);
         binaryOp.getExpr2().accept(this);
         var tempId = addTemp(binaryOp);
-        emitTempAssign(tempId,
-                String.format("%s %s %s", operatorCmds.get(binaryOp.getOp()),
-                        getTemp(binaryOp.getExpr1()),
-                        getTemp(binaryOp.getExpr2())));
+        // assignment expr
+        if (binaryOp.getOp() == TokenType.PUNCT_EQ) {
+            var left = getTemp(binaryOp.getExpr1());
+            emitAssign(left, getTemp(binaryOp.getExpr2()));
+            emitAssign(tempId, left);
+        } else {
+            emitAssign(tempId,
+                    String.format("%s %s %s",
+                            operatorCmds.get(binaryOp.getOp()),
+                            getTemp(binaryOp.getExpr1()),
+                            getTemp(binaryOp.getExpr2())));
+        }
     }
 
     @Override
     public void visit(UnaryOp unaryOp) {
         unaryOp.getExpr().accept(this);
         var tempId = addTemp(unaryOp);
-        emitTempAssign(tempId, String.format("%s %s",
+        emitAssign(tempId, String.format("%s %s",
                 operatorCmds.get(unaryOp.getOp()), getTemp(unaryOp.getExpr())));
     }
 
@@ -137,25 +147,25 @@ public class CodeGenerator implements AstVisitor {
     @Override
     public void visit(IntLiteral intLiteral) {
         var tmpId = addTemp(intLiteral);
-        emitTempAssign(tmpId, Integer.toString(intLiteral.getValue()));
+        emitAssign(tmpId, Integer.toString(intLiteral.getValue()));
     }
 
     @Override
     public void visit(CharLiteral charLiteral) {
         var tmpId = addTemp(charLiteral);
-        emitTempAssign(tmpId, Character.toString(charLiteral.getValue()));
+        emitAssign(tmpId, Character.toString(charLiteral.getValue()));
     }
 
     @Override
     public void visit(FloatLiteral floatLiteral) {
         var tmpId = addTemp(floatLiteral);
-        emitTempAssign(tmpId, Double.toString(floatLiteral.getValue()));
+        emitAssign(tmpId, Double.toString(floatLiteral.getValue()));
     }
 
     @Override
     public void visit(StringLiteral stringLiteral) {
         var tmpId = addTemp(stringLiteral);
-        emitTempAssign(tmpId, stringLiteral.getValue());
+        emitAssign(tmpId, stringLiteral.getValue());
     }
 
     @Override
@@ -188,19 +198,8 @@ public class CodeGenerator implements AstVisitor {
     }
 
     @Override
-    public void visit(AssignStmt assignStmt) {
-        assignStmt.getExpr().accept(this);
-        assignStmt.getId().accept(this);
-        emitTempAssign(getTemp(assignStmt.getId()),
-                getTemp(assignStmt.getExpr()));
-    }
-
-    @Override
-    public void visit(AssignElemStmt assignElemStmt) {
-        assignElemStmt.getExpr().accept(this);
-        assignElemStmt.getElem().accept(this);
-        emitTempAssign(getTemp(assignElemStmt.getElem()),
-                getTemp(assignElemStmt.getExpr()));
+    public void visit(ExprStmt exprStmt) {
+        exprStmt.getExpr().accept(this);
     }
 
     @Override
@@ -214,7 +213,7 @@ public class CodeGenerator implements AstVisitor {
     }
 
     @Override
-    public void visit(BlockStmt blockStmt) {
+    public void visit(CompoundStmt blockStmt) {
         for (var subStmt : blockStmt.getStmts()) {
             subStmt.accept(this);
         }
@@ -226,20 +225,38 @@ public class CodeGenerator implements AstVisitor {
     }
 
     @Override
-    public void visit(FuncDecl funcDecl) {
+    public void visit(ProtoDecl protoDecl) {
         // TODO Auto-generated method stub
 
     }
 
     @Override
     public void visit(VarDecl varDecl) {
-        emit("assign \t" + varDecl.getType().getWidth() + "\tBytes: "
+        emit("alloc \t" + varDecl.getType().getWidth() + "\tBytes: "
                 + varDecl.getIdentifier());
     }
 
     @Override
-    public void visit(ParamDecl paramDecl) {
+    public void visit(FuncDecl funcDecl) {
         // TODO Auto-generated method stub
+
     }
 
+    @Override
+    public void visit(CallExpr callExpr) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void visit(ReturnStmt returnStmt) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void visit(ArrayDecl arrayDecl) {
+        // TODO Auto-generated method stub
+
+    }
 }

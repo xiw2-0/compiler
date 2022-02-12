@@ -5,8 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import cn.xiw.compiler.inter.ArrayType;
-import cn.xiw.compiler.inter.AssignElemStmt;
-import cn.xiw.compiler.inter.AssignStmt;
+import cn.xiw.compiler.inter.ExprStmt;
 import cn.xiw.compiler.inter.AstNode;
 import cn.xiw.compiler.inter.BinaryOp;
 import cn.xiw.compiler.inter.CompoundStmt;
@@ -21,6 +20,7 @@ import cn.xiw.compiler.inter.IfStmt;
 import cn.xiw.compiler.inter.IntLiteral;
 import cn.xiw.compiler.inter.NullStmt;
 import cn.xiw.compiler.inter.BuiltinType;
+import cn.xiw.compiler.inter.CallExpr;
 import cn.xiw.compiler.inter.StmtAst;
 import cn.xiw.compiler.inter.Type;
 import cn.xiw.compiler.inter.UnaryOp;
@@ -118,7 +118,7 @@ public class Parser {
         case KW_IF: // stmt -> if (expr) stmt else stmt
             match(TokenType.KW_IF);
             match(TokenType.PUNCT_L_PAR);
-            var boolExpr = bool();
+            var expr = assignment();
             match(TokenType.PUNCT_R_PAR);
             var ifStmt = stmt();
             StmtAst elseStmt = null;
@@ -126,13 +126,13 @@ public class Parser {
                 match(TokenType.KW_ELSE);
                 elseStmt = stmt();
             }
-            return new IfStmt(boolExpr, ifStmt, elseStmt);
+            return new IfStmt(expr, ifStmt, elseStmt);
         case KW_WHILE: // stmt -> while (expr) stmt
             match(TokenType.KW_WHILE);
             match(TokenType.PUNCT_L_PAR);
-            boolExpr = bool();
+            expr = assignment();
             match(TokenType.PUNCT_R_PAR);
-            var whileStmt = new WhileStmt(boolExpr);
+            var whileStmt = new WhileStmt(expr);
             var oldEnclosing = currentEnclosingStmt;
             whileStmt.setStmt(stmt());
             currentEnclosingStmt = oldEnclosing;
@@ -143,8 +143,10 @@ public class Parser {
             return new BreakStmt(currentEnclosingStmt);
         case PUNCT_L_BAR: // stmt -> block
             return block();
-        case IDENTIFIER: // stmt -> loc = bool;
-            return assignment();
+        case IDENTIFIER: // stmt -> expr;
+            expr = assignment();
+            match(TokenType.PUNCT_SEMI);
+            return new ExprStmt(expr);
         default: // stmt -> type id;
             return declStmt();
         }
@@ -201,32 +203,19 @@ public class Parser {
         return baseType;
     }
 
-    private StmtAst assignment() throws IOException {
-        String id = look.identifier();
-        match(TokenType.IDENTIFIER);
-        if (top.getSymbol(id) == null) {
-            error("Undeclared variable: " + id);
-        }
-        if (!(top.getSymbol(id) instanceof VarDecl)) {
-            error("Wrong type: should be a variable");
-        }
-        // id = bool;
-        var declRef = new DeclRefExpr((VarDecl) top.getSymbol(id));
+    /**
+     * assignment -> bool = assignment | bool
+     * 
+     * @return
+     * @throws IOException
+     */
+    private ExprAst assignment() throws IOException {
+        var boolExpr = bool();
         if (look.getType() == TokenType.PUNCT_EQ) {
             match(TokenType.PUNCT_EQ);
-            var expr = bool();
-            match(TokenType.PUNCT_SEMI);
-            return new AssignStmt(declRef, expr);
+            return new BinaryOp(TokenType.PUNCT_EQ, boolExpr, assignment());
         }
-        // id[index] = bool;
-        match(TokenType.PUNCT_L_SQR);
-        var index = bool();
-        match(TokenType.PUNCT_R_SQR);
-
-        match(TokenType.PUNCT_EQ);
-        var expr = bool();
-        match(TokenType.PUNCT_SEMI);
-        return new AssignElemStmt(new ElemAccessOp(declRef, index), expr);
+        return boolExpr;
     }
 
     /**
@@ -343,7 +332,7 @@ public class Parser {
     }
 
     /**
-     * fator -> ( bool ) | declRef | literal
+     * fator -> ( assignment ) | postfix | literal
      * 
      * @return
      * @throws IOException
@@ -351,26 +340,11 @@ public class Parser {
     private ExprAst factor() throws IOException {
         switch (look.getType()) {
         case PUNCT_L_PAR:
-            var boolExpr = bool();
+            var boolExpr = assignment();
             match(TokenType.PUNCT_R_PAR);
             return boolExpr;
         case IDENTIFIER:
-            var id = (VarDecl) top.getSymbol(look.identifier());
-            if (id == null) {
-                error("Undeclared variable");
-            }
-            match(TokenType.IDENTIFIER);
-            var idRef = new DeclRefExpr(id);
-            if (look.getType() == TokenType.PUNCT_L_SQR) {
-                match(TokenType.PUNCT_L_SQR);
-                var index = bool();
-                var offsetExpr = new BinaryOp(TokenType.PUNCT_STAR, index,
-                        new IntLiteral(
-                                ((ArrayType) id.getType()).getOf().getWidth()));
-                match(TokenType.PUNCT_R_SQR);
-                return new ElemAccessOp(idRef, offsetExpr);
-            }
-            return idRef;
+            return postfix();
         case CONST_CHAR:
             var constChar = new CharLiteral(look.valueChar());
             match(TokenType.CONST_CHAR);
@@ -385,8 +359,43 @@ public class Parser {
             return constInt;
         default:
             error("Syntax error");
-            ;
         }
         return null;
+    }
+
+    /**
+     * postfix -> id | id[expr] | id(expr...)
+     * 
+     * @return
+     * @throws IOException
+     */
+    private ExprAst postfix() throws IOException {
+        var id = top.getSymbol(look.identifier());
+        if (id == null) {
+            error("Undeclared variable");
+        }
+        match(TokenType.IDENTIFIER);
+
+        if (look.getType() == TokenType.PUNCT_L_SQR) {
+            match(TokenType.PUNCT_L_SQR);
+            var index = assignment();
+            var offsetExpr = new BinaryOp(TokenType.PUNCT_STAR, index,
+                    new IntLiteral(
+                            ((ArrayType) id.getType()).getOf().getWidth()));
+            match(TokenType.PUNCT_R_SQR);
+            return new ElemAccessOp(new DeclRefExpr((VarDecl) id), offsetExpr);
+        } else if (look.getType() == TokenType.PUNCT_L_PAR) {
+            match(TokenType.PUNCT_L_PAR);
+            var callExpr = new CallExpr(id);
+            while (look.getType() != TokenType.PUNCT_R_PAR) {
+                callExpr.addParam(assignment());
+                if (look.getType() == TokenType.PUNCT_COMMA) {
+                    match(TokenType.PUNCT_COMMA);
+                }
+            }
+            match(TokenType.PUNCT_R_PAR);
+            return callExpr;
+        }
+        return new DeclRefExpr((VarDecl) id);
     }
 }

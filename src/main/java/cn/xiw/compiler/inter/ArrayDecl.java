@@ -24,8 +24,7 @@ public class ArrayDecl extends DeclAst {
 
     @Override
     public void accept(AstVisitor visitor) {
-        // TODO Auto-generated method stub
-
+        visitor.visit(this);
     }
 
 }

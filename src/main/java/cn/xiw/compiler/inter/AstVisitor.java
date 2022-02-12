@@ -13,6 +13,8 @@ public interface AstVisitor {
 
     void visit(ElemAccessOp accessOp);
 
+    void visit(CallExpr callExpr);
+
     void visit(IntLiteral intLiteral);
 
     void visit(CharLiteral charLiteral);
@@ -25,9 +27,7 @@ public interface AstVisitor {
 
     void visit(WhileStmt whileStmt);
 
-    void visit(AssignStmt assignStmt);
-
-    void visit(AssignElemStmt assignElemStmt);
+    void visit(ExprStmt assignStmt);
 
     void visit(BreakStmt breakStmt);
 
@@ -37,9 +37,13 @@ public interface AstVisitor {
 
     void visit(DeclStmt declStmt);
 
-    void visit(ProtoDecl protoDecl);
+    void visit(ReturnStmt returnStmt);
 
     void visit(VarDecl varDecl);
+
+    void visit(ArrayDecl arrayDecl);
+
+    void visit(ProtoDecl protoDecl);
 
     void visit(FuncDecl funcDecl);
 }
