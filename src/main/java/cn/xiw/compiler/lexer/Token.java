@@ -51,12 +51,12 @@ public class Token {
 
     public static Token constFloatTok(double value) {
         stringTable.add(Double.toString(value));
-        return new Token(TokenType.CONST_CHAR, stringTable.size() - 1);
+        return new Token(TokenType.CONST_FLOAT, stringTable.size() - 1);
     }
 
     public static Token stringLiteralTok(String str) {
         stringTable.add(str);
-        return new Token(TokenType.CONST_CHAR, stringTable.size() - 1);
+        return new Token(TokenType.STRING_LITERAL, stringTable.size() - 1);
     }
 
     public static Token punctTok(String punctuator) {

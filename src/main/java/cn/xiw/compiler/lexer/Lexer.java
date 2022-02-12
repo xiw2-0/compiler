@@ -8,6 +8,7 @@ import java.io.InputStreamReader;
 public class Lexer {
     private final BufferedReader reader;
     private int peek = ' ';
+    private boolean reachEof = false;
 
     private TokenTypeUtil tokenTypeUtil = TokenTypeUtil.instance();
 
@@ -54,7 +55,13 @@ public class Lexer {
      * @throws IOException
      */
     private void readch() throws IOException {
+        if (reachEof) {
+            error("Reached EOF");
+        }
         peek = reader.read();
+        if (peek == -1) {
+            reachEof = true;
+        }
     }
 
     /**
@@ -134,11 +141,13 @@ public class Lexer {
      */
     private Token stringLiteral() throws IOException {
         var strBuilder = new StringBuilder();
-        while (peek != '\'') {
+        // eat \"
+        readch('\"');
+        while (peek != '\"') {
             strBuilder.append((char) peek);
             readch();
         }
-
+        readch('\"');
         return Token.stringLiteralTok(strBuilder.toString());
     }
 
