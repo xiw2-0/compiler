@@ -18,7 +18,6 @@ import cn.xiw.compiler.inter.DeclStmt;
 import cn.xiw.compiler.inter.ElemAccessOp;
 import cn.xiw.compiler.inter.FloatLiteral;
 import cn.xiw.compiler.inter.FuncDecl;
-import cn.xiw.compiler.inter.ProtoDecl;
 import cn.xiw.compiler.inter.ReturnStmt;
 import cn.xiw.compiler.inter.IfStmt;
 import cn.xiw.compiler.inter.IntLiteral;
@@ -138,10 +137,18 @@ public class CodeGenerator implements AstVisitor {
     @Override
     public void visit(ElemAccessOp accessOp) {
         accessOp.getIndex().accept(this);
-        accessOp.getArrayId().accept(this);
+        accessOp.getArrayRef().accept(this);
         putRef(accessOp, String.format("%s[ %s ]",
-                getTemp(accessOp.getArrayId()), getTemp(accessOp.getIndex())));
+                getTemp(accessOp.getArrayRef()), getTemp(accessOp.getIndex())));
+    }
 
+    @Override
+    public void visit(CallExpr callExpr) {
+        callExpr.getParams().stream().forEach(expr -> expr.accept(this));
+        // emit param
+        callExpr.getParams().stream().map(this::getTemp)
+                .forEach(param -> emit("alloc para:" + param));
+        emitAssign(addTemp(callExpr), "call " + callExpr.getFuncId());
     }
 
     @Override
@@ -225,12 +232,6 @@ public class CodeGenerator implements AstVisitor {
     }
 
     @Override
-    public void visit(ProtoDecl protoDecl) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
     public void visit(VarDecl varDecl) {
         emit("alloc \t" + varDecl.getType().getWidth() + "\tBytes: "
                 + varDecl.getIdentifier());
@@ -238,12 +239,6 @@ public class CodeGenerator implements AstVisitor {
 
     @Override
     public void visit(FuncDecl funcDecl) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void visit(CallExpr callExpr) {
         // TODO Auto-generated method stub
 
     }

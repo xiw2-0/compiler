@@ -3,6 +3,7 @@ package cn.xiw.compiler.codegen;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -19,6 +20,7 @@ import cn.xiw.compiler.inter.ElemAccessOp;
 import cn.xiw.compiler.inter.IfStmt;
 import cn.xiw.compiler.inter.IntLiteral;
 import cn.xiw.compiler.inter.NullStmt;
+import cn.xiw.compiler.inter.StmtAst;
 import cn.xiw.compiler.inter.VarDecl;
 import cn.xiw.compiler.lexer.TokenType;
 
@@ -40,9 +42,9 @@ public class CodeGeneratorTest {
     void testVarDecl() {
         // arrange
         // int num;
-        var varDecl = VarDecl.builder().identifier("num")
-                .type(BuiltinType.INT_TYPE).build();
-        var declStmt = new DeclStmt(varDecl);
+        var varDecl = VarDecl.builder().identifier("num").typeId("int").build();
+        varDecl.setType(BuiltinType.INT_TYPE);
+        var declStmt = DeclStmt.builder().varDecl(varDecl).build();
         // act
         declStmt.accept(codeGenerator);
         // assert
@@ -53,10 +55,17 @@ public class CodeGeneratorTest {
     void testAssignStmt() {
         // arrange
         // i = 10;
-        var varDecl = VarDecl.builder().identifier("i")
-                .type(BuiltinType.INT_TYPE).build();
-        var assignStmt = new ExprStmt(new BinaryOp(TokenType.PUNCT_EQ,
-                new DeclRefExpr(varDecl), new IntLiteral(10)));
+        var varDecl = VarDecl.builder().identifier("i").typeId("int").build();
+        varDecl.setType(BuiltinType.INT_TYPE);
+        var declRefExpr = DeclRefExpr.builder().id("i").build();
+        declRefExpr.setVarDecl(varDecl);
+        declRefExpr.setTypeId("int");
+        declRefExpr.setType(BuiltinType.INT_TYPE);
+        var assignStmt = ExprStmt.builder()
+                .expr(BinaryOp.builder().op(TokenType.PUNCT_EQ)
+                        .expr1(declRefExpr)
+                        .expr2(IntLiteral.builder().value(10).build()).build())
+                .build();
         // act
         assignStmt.accept(codeGenerator);
         // assert
@@ -67,11 +76,18 @@ public class CodeGeneratorTest {
     void testExpr() {
         // arrange
         // 10 + i * 9
-        var varDecl = VarDecl.builder().identifier("i")
-                .type(BuiltinType.INT_TYPE).build();
-        var binaryOp = new BinaryOp(TokenType.PUNCT_PLUS, new IntLiteral(10),
-                new BinaryOp(TokenType.PUNCT_STAR, new DeclRefExpr(varDecl),
-                        new IntLiteral(9)));
+        var varDecl = VarDecl.builder().identifier("i").typeId("int").build();
+        varDecl.setType(BuiltinType.INT_TYPE);
+        var declRefExpr = DeclRefExpr.builder().id("i").build();
+        declRefExpr.setVarDecl(varDecl);
+        declRefExpr.setTypeId("int");
+        declRefExpr.setType(BuiltinType.INT_TYPE);
+        var binaryOp = BinaryOp.builder().op(TokenType.PUNCT_PLUS)
+                .expr1(IntLiteral.builder().value(10).build())
+                .expr2(BinaryOp.builder().op(TokenType.PUNCT_STAR)
+                        .expr1(declRefExpr)
+                        .expr2(IntLiteral.builder().value(9).build()).build())
+                .build();
         // act
         binaryOp.accept(codeGenerator);
         // assert
@@ -85,15 +101,28 @@ public class CodeGeneratorTest {
     void testIfStmt() {
         // arrange
         // if (10 >= 90) i = 90; else i = 10;
-        var expr = new BinaryOp(TokenType.PUNCT_GE, new IntLiteral(10),
-                new IntLiteral(90));
-        var varDecl = VarDecl.builder().identifier("i")
-                .type(BuiltinType.INT_TYPE).build();
-        var ifSubStmt = new ExprStmt(new BinaryOp(TokenType.PUNCT_EQ,
-                new DeclRefExpr(varDecl), new IntLiteral(90)));
-        var elseSubStmt = new ExprStmt(new BinaryOp(TokenType.PUNCT_EQ,
-                new DeclRefExpr(varDecl), new IntLiteral(10)));
-        var ifStmt = new IfStmt(expr, ifSubStmt, elseSubStmt);
+        var expr = BinaryOp.builder().op(TokenType.PUNCT_GE)
+                .expr1(IntLiteral.builder().value(10).build())
+                .expr2(IntLiteral.builder().value(90).build()).build();
+        var varDecl = VarDecl.builder().identifier("i").typeId("int").build();
+        varDecl.setType(BuiltinType.INT_TYPE);
+        var declRefExpr = DeclRefExpr.builder().id("i").build();
+        declRefExpr.setVarDecl(varDecl);
+        declRefExpr.setTypeId("int");
+        declRefExpr.setType(BuiltinType.INT_TYPE);
+        var ifSubStmt = ExprStmt.builder()
+                .expr(BinaryOp.builder().op(TokenType.PUNCT_EQ)
+                        .expr1(declRefExpr)
+                        .expr2(IntLiteral.builder().value(90).build()).build())
+                .build();
+        var elseSubStmt = ExprStmt.builder()
+                .expr(BinaryOp.builder().op(TokenType.PUNCT_EQ)
+                        .expr1(declRefExpr)
+                        .expr2(IntLiteral.builder().value(10).build()).build())
+                .build();
+
+        var ifStmt = IfStmt.builder().expr(expr).ifStmt(ifSubStmt)
+                .elseStmt(elseSubStmt).build();
         // act
         ifStmt.accept(codeGenerator);
         // assert
@@ -109,22 +138,41 @@ public class CodeGeneratorTest {
     void testElemAccessOp() {
         // arrange
         // { int nums[10]; nums[1] = nums[0] + 1; }
-        var varDecl = VarDecl.builder().identifier("nums")
-                .type(new ArrayType(BuiltinType.INT_TYPE, 10)).build();
-        var declStmt = new DeclStmt(varDecl);
-        var leftElem = new ElemAccessOp(new DeclRefExpr(varDecl),
-                new IntLiteral(4));
-        var rightElem = new ElemAccessOp(new DeclRefExpr(varDecl),
-                new IntLiteral(0));
-        var assignmentOp = new BinaryOp(TokenType.PUNCT_EQ, leftElem,
-                new BinaryOp(TokenType.PUNCT_PLUS, rightElem,
-                        new IntLiteral(1)));
-        var blockStmt = new CompoundStmt();
-        blockStmt.addStmt(declStmt);
-        blockStmt.addStmt(new ExprStmt(assignmentOp));
+        var varDecl = VarDecl.builder().identifier("nums").typeId("int[ 10 ]")
+                .build();
+        varDecl.setType(ArrayType.builder().baseType(BuiltinType.INT_TYPE)
+                .size(10).build());
+        var declRefExpr = DeclRefExpr.builder().id("nums").build();
+        declRefExpr.setTypeId("int[10]");
+        declRefExpr.setType(ArrayType.builder().baseType(BuiltinType.INT_TYPE)
+                .size(10).build());
+        declRefExpr.setVarDecl(varDecl);
+
+        var declStmt = DeclStmt.builder().varDecl(varDecl).build();
+        var leftElem = ElemAccessOp.builder().id("nums")
+                .index(IntLiteral.builder().value(1).build()).build();
+        leftElem.setTypeId("int");
+        leftElem.setType(BuiltinType.INT_TYPE);
+        leftElem.setIndex(IntLiteral.builder().value(4).build());
+        leftElem.setArrayRef(declRefExpr);
+        var rightElem = ElemAccessOp.builder().id("nums")
+                .index(IntLiteral.builder().value(0).build()).build();
+        rightElem.setTypeId("int");
+        rightElem.setType(BuiltinType.INT_TYPE);
+        rightElem.setIndex(IntLiteral.builder().value(0).build());
+        rightElem.setArrayRef(declRefExpr);
+        var assignmentOp = BinaryOp.builder().op(TokenType.PUNCT_EQ)
+                .expr1(leftElem)
+                .expr2(BinaryOp.builder().op(TokenType.PUNCT_PLUS)
+                        .expr1(rightElem)
+                        .expr2(IntLiteral.builder().value(1).build()).build())
+                .build();
+        var stmts = new ArrayList<StmtAst>();
+        stmts.add(declStmt);
+        stmts.add(ExprStmt.builder().expr(assignmentOp).build());
 
         // act
-        blockStmt.accept(codeGenerator);
+        CompoundStmt.builder().stmts(stmts).build().accept(codeGenerator);
         // assert
         var codes = List.of("\talloc \t40\tBytes: nums", "\tt1 = 4", "\tt2 = 0",
                 "\tt3 = 1", "\tt4 = ADD nums[ t2 ] t3", "\tnums[ t1 ] = t4",

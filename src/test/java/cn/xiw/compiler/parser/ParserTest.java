@@ -13,11 +13,10 @@ import org.mockito.Mock;
 import cn.xiw.compiler.inter.ExprStmt;
 import cn.xiw.compiler.inter.FloatLiteral;
 import cn.xiw.compiler.inter.FuncDecl;
-import cn.xiw.compiler.inter.ArrayType;
 import cn.xiw.compiler.inter.BinaryOp;
 import cn.xiw.compiler.inter.CompoundStmt;
 import cn.xiw.compiler.inter.DeclRefExpr;
-import cn.xiw.compiler.inter.BuiltinType;
+import cn.xiw.compiler.inter.CallExpr;
 import cn.xiw.compiler.inter.DeclStmt;
 import cn.xiw.compiler.inter.ElemAccessOp;
 import cn.xiw.compiler.inter.IfStmt;
@@ -49,8 +48,8 @@ public class ParserTest {
 
         // assert
         var stmts = ast.getStmts();
-        assertTrue(stmts.size() == 1);
-        assertTrue(stmts.get(0) instanceof NullStmt);
+        assertEquals(1, stmts.size());
+        assertEquals(NullStmt.instance(), stmts.get(0));
     }
 
     @Test
@@ -66,10 +65,10 @@ public class ParserTest {
 
         // assert
         var stmts = ast.getStmts();
-        assertTrue(stmts.size() == 1);
+        assertEquals(1, stmts.size());
         var varDecl = ((DeclStmt) stmts.get(0)).getVarDecl();
-        assertTrue(varDecl.getIdentifier() == "num");
-        assertTrue(varDecl.getType() == BuiltinType.INT_TYPE);
+        assertEquals("num", varDecl.getIdentifier());
+        assertEquals("int", varDecl.getTypeId());
     }
 
     @Test
@@ -87,15 +86,14 @@ public class ParserTest {
 
         // assert
         var stmts = ast.getStmts();
-        assertTrue(stmts.size() == 2);
+        assertEquals(2, stmts.size());
         var varDecl = ((DeclStmt) stmts.get(0)).getVarDecl();
-        assertTrue(varDecl.getIdentifier() == "num");
-        assertTrue(varDecl.getType() == BuiltinType.INT_TYPE);
+        assertEquals("num", varDecl.getIdentifier());
+        assertEquals("int", varDecl.getTypeId());
 
         var assignExpr = (BinaryOp) ((ExprStmt) stmts.get(1)).getExpr();
         assertEquals(TokenType.PUNCT_EQ, assignExpr.getOp());
-        assertEquals(varDecl,
-                ((DeclRefExpr) assignExpr.getExpr1()).getVarDecl());
+        assertEquals("num", ((DeclRefExpr) assignExpr.getExpr1()).getId());
         assertEquals(100, ((IntLiteral) assignExpr.getExpr2()).getValue());
     }
 
@@ -116,21 +114,21 @@ public class ParserTest {
 
         // assert
         var stmts = ast.getStmts();
-        assertTrue(stmts.size() == 1);
+        assertEquals(1, stmts.size());
         var ifStmt = (IfStmt) stmts.get(0);
         assertTrue(ifStmt.isContainingElse());
 
         // expr
         var expr = (BinaryOp) ifStmt.getExpr();
-        assertTrue(((IntLiteral) (expr.getExpr1())).getValue() == 1);
-        assertTrue(((IntLiteral) (expr.getExpr2())).getValue() == 10);
-        assertTrue(expr.getOp() == TokenType.PUNCT_GE);
+        assertEquals(1, ((IntLiteral) (expr.getExpr1())).getValue());
+        assertEquals(10, ((IntLiteral) (expr.getExpr2())).getValue());
+        assertEquals(TokenType.PUNCT_GE, expr.getOp());
         // if
-        assertTrue(ifStmt.getIfStmt() == NullStmt.instance());
+        assertEquals(NullStmt.instance(), ifStmt.getIfStmt());
         // else
         var elseSubStmt = (CompoundStmt) ifStmt.getElseStmt();
-        assertTrue(elseSubStmt.getStmts().size() == 1);
-        assertTrue(elseSubStmt.getStmts().get(0) == NullStmt.instance());
+        assertEquals(1, elseSubStmt.getStmts().size());
+        assertEquals(NullStmt.instance(), elseSubStmt.getStmts().get(0));
     }
 
     @Test
@@ -149,18 +147,18 @@ public class ParserTest {
 
         // assert
         var stmts = ast.getStmts();
-        assertTrue(stmts.size() == 1);
+        assertEquals(1, stmts.size());
         var whileStmt = (WhileStmt) stmts.get(0);
 
         // expr
         var expr = (BinaryOp) whileStmt.getExpr();
-        assertTrue(((IntLiteral) (expr.getExpr1())).getValue() == 1);
-        assertTrue(((IntLiteral) (expr.getExpr2())).getValue() == 10);
-        assertTrue(expr.getOp() == TokenType.PUNCT_GE);
+        assertEquals(1, ((IntLiteral) (expr.getExpr1())).getValue());
+        assertEquals(10, ((IntLiteral) (expr.getExpr2())).getValue());
+        assertEquals(TokenType.PUNCT_GE, expr.getOp());
 
         var bodyStmt = (CompoundStmt) whileStmt.getStmt();
-        assertTrue(bodyStmt.getStmts().size() == 1);
-        assertTrue(bodyStmt.getStmts().get(0) == NullStmt.instance());
+        assertEquals(1, bodyStmt.getStmts().size());
+        assertEquals(NullStmt.instance(), bodyStmt.getStmts().get(0));
     }
 
     @Test
@@ -181,21 +179,19 @@ public class ParserTest {
 
         // assert
         var stmts = ast.getStmts();
-        assertTrue(stmts.size() == 2);
+        assertEquals(2, stmts.size());
         // decl stmt
         var varDecl = ((DeclStmt) stmts.get(0)).getVarDecl();
-        assertTrue(varDecl.getIdentifier() == "nums");
-        assertTrue(varDecl.getType()
-                .equals(new ArrayType(BuiltinType.INT_TYPE, 6)));
+        assertEquals("nums", varDecl.getIdentifier());
+        assertEquals("int[6]", varDecl.getTypeId());
         // assign expr stmt
         var elemAssign = (BinaryOp) ((ExprStmt) stmts.get(1)).getExpr();
         assertEquals(TokenType.PUNCT_EQ, elemAssign.getOp());
         // left
         var elemAccessOp = (ElemAccessOp) elemAssign.getExpr1();
-        assertEquals(varDecl, elemAccessOp.getArrayId().getVarDecl());
-        var indexExpr = (BinaryOp) elemAccessOp.getIndex();
-        assertEquals(TokenType.PUNCT_STAR, indexExpr.getOp());
-        assertEquals(0, ((IntLiteral) indexExpr.getExpr1()).getValue());
+        assertEquals("nums", elemAccessOp.getArrayId());
+        var indexExpr = (IntLiteral) elemAccessOp.getIndex();
+        assertEquals(0, indexExpr.getValue());
         // right
         assertEquals(100, ((IntLiteral) elemAssign.getExpr2()).getValue());
     }
@@ -215,7 +211,7 @@ public class ParserTest {
         var decls = unitAst.getDeclarations();
         assertEquals(1, decls.size());
         var varDecl = (VarDecl) decls.get(0);
-        assertEquals(BuiltinType.INT_TYPE, varDecl.getType());
+        assertEquals("int", varDecl.getTypeId());
         assertEquals("num", varDecl.getIdentifier());
     }
 
@@ -240,13 +236,13 @@ public class ParserTest {
         var decls = unitAst.getDeclarations();
         assertEquals(1, decls.size());
         var funcDecl = (FuncDecl) decls.get(0);
-        assertEquals(BuiltinType.INT_TYPE, funcDecl.getType());
+        assertEquals("int", funcDecl.getTypeId());
         assertEquals("getnum", funcDecl.getIdentifier());
         var params = funcDecl.getParams();
         assertEquals(2, params.size());
-        assertEquals(BuiltinType.FLOAT_TYPE, params.get(0).getType());
+        assertEquals("float", params.get(0).getTypeId());
         assertEquals("value", params.get(0).getIdentifier());
-        assertEquals(BuiltinType.INT_TYPE, params.get(1).getType());
+        assertEquals("int", params.get(1).getTypeId());
         assertEquals("count", params.get(1).getIdentifier());
         var body = funcDecl.getBody().getStmts();
         assertEquals(1, body.size());
@@ -254,6 +250,38 @@ public class ParserTest {
         assertEquals(1.0,
                 ((FloatLiteral) ((ReturnStmt) body.get(0)).getRetExpr())
                         .getValue());
+    }
+
+    @Test
+    void testCallExpr() throws IOException {
+        // arrange
+        when(lexer.scan()).thenReturn(Token.punctTok("{"),
+                Token.keywordTok("int"), Token.identifierTok("num"),
+                Token.punctTok(";"), Token.identifierTok("num"),
+                Token.punctTok("="), Token.identifierTok("getnum"),
+                Token.punctTok("("), Token.constIntTok(100),
+                Token.punctTok(")"), Token.punctTok(";"), Token.punctTok("}"),
+                Token.eofTok());
+        parser = new Parser(lexer);
+
+        // act
+        var ast = (CompoundStmt) parser.block();
+
+        // assert
+        var stmts = ast.getStmts();
+        assertEquals(2, stmts.size());
+        var varDecl = ((DeclStmt) stmts.get(0)).getVarDecl();
+        assertEquals("num", varDecl.getIdentifier());
+        assertEquals("int", varDecl.getTypeId());
+
+        var assignExpr = (BinaryOp) ((ExprStmt) stmts.get(1)).getExpr();
+        assertEquals(TokenType.PUNCT_EQ, assignExpr.getOp());
+        assertEquals("num", ((DeclRefExpr) assignExpr.getExpr1()).getId());
+        var callExpr = (CallExpr) assignExpr.getExpr2();
+        assertEquals("getnum", callExpr.getFuncId());
+        assertEquals(1, callExpr.getParams().size());
+        assertEquals(100,
+                ((IntLiteral) callExpr.getParams().get(0)).getValue());
     }
 
 }

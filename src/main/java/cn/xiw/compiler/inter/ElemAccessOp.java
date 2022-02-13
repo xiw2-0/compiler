@@ -12,7 +12,7 @@ import lombok.Setter;
 public class ElemAccessOp extends ExprAst {
     private final String arrayId;
     private DeclRefExpr arrayRef;
-    private final ExprAst index;
+    private ExprAst index;
 
     @Builder
     ElemAccessOp(String id, ExprAst index) {
