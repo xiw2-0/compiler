@@ -52,7 +52,7 @@ public class Parser {
     }
 
     private void error(String msg) {
-        throw new Error(msg);
+        throw new ParseException(msg);
     }
 
     // move to next
