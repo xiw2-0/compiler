@@ -21,8 +21,12 @@ public class Env {
         this.prev = prev;
     }
 
-    public void addSymbol(String id, DeclAst decl) {
+    public boolean addSymbol(String id, DeclAst decl) {
+        if (symbolTable.containsKey(id)) {
+            return false;
+        }
         symbolTable.put(id, decl);
+        return true;
     }
 
     public DeclAst getSymbol(String id) {

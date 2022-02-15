@@ -5,31 +5,26 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import cn.xiw.compiler.inter.ExprStmt;
 import cn.xiw.compiler.inter.AstNode;
-import cn.xiw.compiler.inter.AstVisitor;
+import cn.xiw.compiler.inter.BaseVisitor;
 import cn.xiw.compiler.inter.BinaryOp;
-import cn.xiw.compiler.inter.CompoundStmt;
 import cn.xiw.compiler.inter.BreakStmt;
 import cn.xiw.compiler.inter.CallExpr;
 import cn.xiw.compiler.inter.CharLiteral;
 import cn.xiw.compiler.inter.DeclRefExpr;
-import cn.xiw.compiler.inter.DeclStmt;
 import cn.xiw.compiler.inter.ElemAccessOp;
 import cn.xiw.compiler.inter.FloatLiteral;
 import cn.xiw.compiler.inter.FuncDecl;
 import cn.xiw.compiler.inter.ReturnStmt;
 import cn.xiw.compiler.inter.IfStmt;
 import cn.xiw.compiler.inter.IntLiteral;
-import cn.xiw.compiler.inter.NullStmt;
 import cn.xiw.compiler.inter.StringLiteral;
-import cn.xiw.compiler.inter.TranslationUnitAst;
 import cn.xiw.compiler.inter.UnaryOp;
 import cn.xiw.compiler.inter.VarDecl;
 import cn.xiw.compiler.inter.WhileStmt;
 import cn.xiw.compiler.lexer.TokenType;
 
-public class CodeGenerator implements AstVisitor {
+public class CodeGenerator extends BaseVisitor {
     private OutputStream out;
     private int tempExprResultCount = 0;
     private Map<AstNode, String> tempExprResult = new HashMap<>();
@@ -88,6 +83,10 @@ public class CodeGenerator implements AstVisitor {
         print("L" + label + ":\n");
     }
 
+    private void emitFuncLabel(String funcLabel) {
+        print(funcLabel + ":\n");
+    }
+
     private void emit(String line) {
         print("\t" + line + "\n");
     }
@@ -106,8 +105,8 @@ public class CodeGenerator implements AstVisitor {
 
     @Override
     public void visit(BinaryOp binaryOp) {
-        binaryOp.getExpr1().accept(this);
-        binaryOp.getExpr2().accept(this);
+        super.visit(binaryOp);
+
         var tempId = addTemp(binaryOp);
         // assignment expr
         if (binaryOp.getOp() == TokenType.PUNCT_EQ) {
@@ -125,7 +124,8 @@ public class CodeGenerator implements AstVisitor {
 
     @Override
     public void visit(UnaryOp unaryOp) {
-        unaryOp.getExpr().accept(this);
+        super.visit(unaryOp);
+
         var tempId = addTemp(unaryOp);
         emitAssign(tempId, String.format("%s %s",
                 operatorCmds.get(unaryOp.getOp()), getTemp(unaryOp.getExpr())));
@@ -136,15 +136,18 @@ public class CodeGenerator implements AstVisitor {
      */
     @Override
     public void visit(ElemAccessOp accessOp) {
-        accessOp.getIndex().accept(this);
-        accessOp.getArrayRef().accept(this);
-        putRef(accessOp, String.format("%s[ %s ]",
-                getTemp(accessOp.getArrayRef()), getTemp(accessOp.getIndex())));
+        super.visit(accessOp);
+
+        putRef(accessOp,
+                String.format("%s[ %s ]",
+                        accessOp.getArrayDecl().getIdentifier(),
+                        getTemp(accessOp.getIndex())));
     }
 
     @Override
     public void visit(CallExpr callExpr) {
-        callExpr.getParams().stream().forEach(expr -> expr.accept(this));
+        super.visit(callExpr);
+
         // emit param
         callExpr.getParams().stream().map(this::getTemp)
                 .forEach(param -> emit("alloc para:" + param));
@@ -205,30 +208,8 @@ public class CodeGenerator implements AstVisitor {
     }
 
     @Override
-    public void visit(ExprStmt exprStmt) {
-        exprStmt.getExpr().accept(this);
-    }
-
-    @Override
     public void visit(BreakStmt breakStmt) {
         emit("goto L" + whileOutLabel.get(breakStmt.getEnclosingStmt()));
-    }
-
-    @Override
-    public void visit(NullStmt nullStmt) {
-        // Do nothing
-    }
-
-    @Override
-    public void visit(CompoundStmt blockStmt) {
-        for (var subStmt : blockStmt.getStmts()) {
-            subStmt.accept(this);
-        }
-    }
-
-    @Override
-    public void visit(DeclStmt declStmt) {
-        declStmt.getVarDecl().accept(this);
     }
 
     @Override
@@ -239,19 +220,16 @@ public class CodeGenerator implements AstVisitor {
 
     @Override
     public void visit(FuncDecl funcDecl) {
-        // TODO Auto-generated method stub
-
+        emitFuncLabel(funcDecl.getIdentifier());
+        super.visit(funcDecl);
     }
 
     @Override
     public void visit(ReturnStmt returnStmt) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void visit(TranslationUnitAst translationUnitAst) {
-        // TODO Auto-generated method stub
-
+        super.visit(returnStmt);
+        if (returnStmt.getRetExpr() != null) {
+            emit("SET RETVAL = " + getTemp(returnStmt.getRetExpr()));
+        }
+        emit("RET");
     }
 }

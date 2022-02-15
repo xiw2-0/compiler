@@ -142,11 +142,6 @@ public class CodeGeneratorTest {
                 .build();
         varDecl.setType(ArrayType.builder().baseType(BuiltinType.INT_TYPE)
                 .size(10).build());
-        var declRefExpr = DeclRefExpr.builder().id("nums").build();
-        declRefExpr.setTypeId("int[10]");
-        declRefExpr.setType(ArrayType.builder().baseType(BuiltinType.INT_TYPE)
-                .size(10).build());
-        declRefExpr.setVarDecl(varDecl);
 
         var declStmt = DeclStmt.builder().varDecl(varDecl).build();
         var leftElem = ElemAccessOp.builder().id("nums")
@@ -154,13 +149,13 @@ public class CodeGeneratorTest {
         leftElem.setTypeId("int");
         leftElem.setType(BuiltinType.INT_TYPE);
         leftElem.setIndex(IntLiteral.builder().value(4).build());
-        leftElem.setArrayRef(declRefExpr);
+        leftElem.setArrayDecl(varDecl);
         var rightElem = ElemAccessOp.builder().id("nums")
                 .index(IntLiteral.builder().value(0).build()).build();
         rightElem.setTypeId("int");
         rightElem.setType(BuiltinType.INT_TYPE);
         rightElem.setIndex(IntLiteral.builder().value(0).build());
-        rightElem.setArrayRef(declRefExpr);
+        rightElem.setArrayDecl(varDecl);
         var assignmentOp = BinaryOp.builder().op(TokenType.PUNCT_EQ)
                 .expr1(leftElem)
                 .expr2(BinaryOp.builder().op(TokenType.PUNCT_PLUS)
