@@ -27,7 +27,7 @@ public interface AstVisitor {
 
     void visit(WhileStmt whileStmt);
 
-    void visit(ExprStmt assignStmt);
+    void visit(ExprStmt exprStmt);
 
     void visit(BreakStmt breakStmt);
 

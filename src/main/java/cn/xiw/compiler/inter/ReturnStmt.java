@@ -8,7 +8,7 @@ import lombok.Setter;
 @Builder
 @Setter
 public class ReturnStmt extends StmtAst {
-    private String funcId;
+    private final String funcId;
     private FuncDecl func;
     private final ExprAst retExpr;
 
