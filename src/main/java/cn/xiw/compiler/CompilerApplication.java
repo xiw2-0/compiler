@@ -8,6 +8,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import cn.xiw.compiler.codegen.CodeGenerator;
 import cn.xiw.compiler.lexer.Lexer;
 import cn.xiw.compiler.parser.Parser;
+import cn.xiw.compiler.sema.SematicAnalysis;
 
 @SpringBootApplication
 public class CompilerApplication implements CommandLineRunner {
@@ -22,6 +23,10 @@ public class CompilerApplication implements CommandLineRunner {
 			var lexer = new Lexer(inputStream);
 			var parser = new Parser(lexer);
 			var ast = parser.parse();
+
+			var sema = new SematicAnalysis();
+			ast.accept(sema);
+
 			var codegen = new CodeGenerator(System.out);
 			ast.accept(codegen);
 		}
